@@ -41,6 +41,10 @@ def get_events_from(path):
                 splitted_line = line.split(":")
                 currentDict["new-threshold"] = float(splitted_line[1])
 
+            elif "freed in this major collection" in line:
+                splitted_line = line.split(":")
+                currentDict["bytes-collected"] = float(splitted_line[1])
+
             else:
                 currentDict["text"] += line
 
