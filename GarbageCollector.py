@@ -37,6 +37,7 @@ class MemBalancer:
         E = self.sqrt(self.L_smoothed / self.TUNING
                       * (self.g_m_smoothed / self.g_t_smoothed)
                       / (self.s_m_smoothed / self.s_t_smoothed))
+        self.E = E
         self.heap_limit = self.L_smoothed + \
             max(E, self.minimum_extra_heap) + self.nursery_size
         return self.heap_limit

@@ -29,13 +29,20 @@ def get_events_from(path):
                 splitted_line = line.split(":")
                 currentDict["time-last-minor-gc"] = float(splitted_line[1])
 
-            elif "minor collect, total memory used" in line:
+            elif "memory used before collect" in line:
+                splitted_line = line.split(":")
+                currentDict["memory-before-collect"] = float(splitted_line[1])
+
+            elif "total memory used" in line:
                 splitted_line = line.split(":")
                 currentDict["total-memory-used"] = int(splitted_line[1])
 
             elif "time taken" in line:
                 splitted_line = line.split(":")
-                currentDict["time-taken"] = float(splitted_line[1])
+                if currentDict.get("time-taken") is not None:
+                    currentDict["time-taken"] += float(splitted_line[1])
+                else:
+                    currentDict["time-taken"] = float(splitted_line[1])
 
             elif "major collection threshold" in line:
                 splitted_line = line.split(":")
@@ -44,6 +51,10 @@ def get_events_from(path):
             elif "freed in this major collection" in line:
                 splitted_line = line.split(":")
                 currentDict["bytes-collected"] = float(splitted_line[1])
+
+            elif "nursery size" in line:
+                splitted_line = line.split(":")
+                currentDict["nursery-size"] = int(splitted_line[1])
 
             else:
                 currentDict["text"] += line
