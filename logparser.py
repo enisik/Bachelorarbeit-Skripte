@@ -18,13 +18,20 @@ def get_events_from(path):
 
             if start.match(line):
                 splitted_line = line.split("{")
-                currentDict = {"start": splitted_line[0][1:-2], "task": splitted_line[1][:-1], "text": ""}
+                if splitted_line[1][:-1] == "gc-collect-done":
+                    currentDict["task"] = "gc-collect-done"
+                else:
+                    currentDict = {"start": splitted_line[0][1:-2], "task": splitted_line[1][:-1], "text": ""}
             
             elif end.match(line) and "gc-collect-done" not in line:
                 splitted_line = line.split("]")
                 currentDict["end"] = splitted_line[0][1:]
                 yield currentDict
             
+            elif "time since program start" in line:
+                splitted_line = line.split(":")
+                currentDict["time-start"] = float(splitted_line[1])
+
             elif "time since end of last minor GC" in line: 
                 splitted_line = line.split(":")
                 currentDict["time-last-minor-gc"] = float(splitted_line[1])
@@ -35,7 +42,7 @@ def get_events_from(path):
 
             elif "total memory used" in line:
                 splitted_line = line.split(":")
-                currentDict["total-memory-used"] = int(splitted_line[1])
+                currentDict["memory-after-collect"] = int(splitted_line[1])
 
             elif "time taken" in line:
                 splitted_line = line.split(":")
