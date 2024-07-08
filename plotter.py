@@ -104,7 +104,6 @@ def plot_gc(events, title="benchmark", fignum=0):
     #plt.xlabel("time")
     #plt.ylabel("memory")
     #plt.title(title) 
-    #plt.show()
 
 
 def plot_membalancer_heap_rule(events, mem_balancer, fignum):
@@ -115,8 +114,8 @@ def plot_membalancer_heap_rule(events, mem_balancer, fignum):
     total_memory_used_last_minor = 0
     time_heartbeat = []
     time_major = []
-    g_m_list, g_t_list = [], []
-    s_m_list, s_t_list = [], []
+    g_m_list, g_m_smoothed_list, g_t_list, g_t_smoothed_list = [], [], [], []
+    s_m_list, s_m_smoothed_list, s_t_list, s_t_smoothed_list = [], [], [], []
     for event in events[1:]:
         if event["task"] == "gc-minor":
             time_heartbeat.append(event["time-start"])
@@ -136,6 +135,8 @@ def plot_membalancer_heap_rule(events, mem_balancer, fignum):
             g_t = event["time-last-minor-gc"]  # time since last heartbeat
             g_t_list.append(g_t)
             mem_balancer.on_heartbeat(g_m, g_t)
+            g_m_smoothed_list.append(mem_balancer.g_m_smoothed)
+            g_t_smoothed_list.append(mem_balancer.g_t_smoothed)
             time_threshold.append(event["time-start"])
             heap_limit.append(mem_balancer.compute_M())
         elif event["task"] == "gc-collect-step":
@@ -156,6 +157,8 @@ def plot_membalancer_heap_rule(events, mem_balancer, fignum):
             #g_t = time_heartbeat[-2] - time_heartbeat[-1]
             # mem_balancer.on_heartbeat()
             heap_limit.append(mem_balancer.compute_M())
+            s_m_smoothed_list.append(mem_balancer.s_m_smoothed)
+            s_t_smoothed_list.append(mem_balancer.s_t_smoothed)
 
     t = np.linspace(0, events[-1]["time-start"], len(time_threshold)*50)[1:]
     index = np.searchsorted(time_threshold, t, 'right')
@@ -169,7 +172,9 @@ def plot_membalancer_heap_rule(events, mem_balancer, fignum):
     ax = plt.subplot(312)
     ax.grid()
     ax.plot(time_heartbeat, g_m_list, label="$g_m$")
+    ax.plot(time_heartbeat, g_m_smoothed_list, label="$g_m^{*}$")
     ax.plot(time_major, s_m_list, label="$s_m$")
+    ax.plot(time_major, s_m_smoothed_list, label="$s_m^{*}$")
     ax.yaxis.set_major_formatter(EngFormatter("B"))
     ax.xaxis.set_major_formatter(EngFormatter("s"))
     ax.legend(loc='best', ncol=2,  # bbox_to_anchor=(0.058, 1.05),
@@ -179,11 +184,16 @@ def plot_membalancer_heap_rule(events, mem_balancer, fignum):
     ax = plt.subplot(313)
     ax.grid()
     g_m_list = np.array(g_m_list)
+    g_m_smoothed_list = np.array(g_m_smoothed_list)
     g_t_list = np.array(g_t_list)
     s_m_list = np.array(s_m_list)
+    s_m_smoothed_list = np.array(s_m_smoothed_list)
     s_t_list = np.array(s_t_list)
     ax.plot(time_heartbeat, g_m_list/g_t_list, label="$g_m / g_t$")
+    ax.plot(time_heartbeat, g_m_smoothed_list/g_t_smoothed_list, label="$g_m^{*} / g_t^{*}$")
     ax.plot(time_major, s_m_list/s_t_list, label="$s_m / s_t$")
+    ax.plot(time_major, s_m_smoothed_list /
+            s_t_smoothed_list, label="$s_m^{*} / s_t^{*}$")
     ax.yaxis.set_major_formatter(EngFormatter("B/s"))
     ax.xaxis.set_major_formatter(EngFormatter("s"))
     ax.legend(loc='best', ncol=2,  # bbox_to_anchor=(0.058, 1.05),
