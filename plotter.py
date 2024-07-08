@@ -50,7 +50,7 @@ def plot_gc_hex(events, title="benchmark", fignum=0):
     plt.legend()
     plt.show()
 
-def plot_gc(events, title = "benchmark", fignum=0):
+def plot_gc(events, title="benchmark", fignum=0):
     def heap_limit(time):
         index = np.searchsorted(time_threshold, time, 'right')
         return np.array(threshold)[index - 1]
@@ -74,9 +74,10 @@ def plot_gc(events, title = "benchmark", fignum=0):
             time_gc_end.append(time_gc_start[-1] + event["time-taken"])
             if "gc-collect-done" == event["task"]:
                 time_threshold.append(time_gc_end[-1])
-                time_major_gc_end.append(time_threshold[-1])
                 threshold.append(event["new-threshold"])
-            elif "FINALIZING" not in event["text"] and "SCANNING" in event["text"]:
+            elif "FINALIZING" in event["text"]:
+                time_major_gc_end.append(time_gc_end[-1])
+            elif "SCANNING" in event["text"]:
                 time_major_gc_start.append(time_gc_start[-1])
 
 
@@ -86,8 +87,12 @@ def plot_gc(events, title = "benchmark", fignum=0):
     plt.figure(fignum, figsize=(10, 8))
     plt.clf()
     plt.subplot(211)
+    for i in range(len(time_gc_start)):
+        plt.axvspan(
+            time_gc_start[i], time_gc_end[i], alpha=0.4, color='red')
+
     for i in range(len(time_major_gc_start)):
-        plt.axvspan(time_major_gc_start[i], time_major_gc_end[i], alpha=0.3, color='red')
+        plt.axvspan(time_major_gc_start[i], time_major_gc_end[i], alpha=0.2, color='blue')
     plt.plot(time_memory,memory, 'b-', label="heap usage at minor gc")
     plt.plot(t_threshold, y_threshold, 'm', label="heap limit")
     plt.grid()
@@ -101,13 +106,10 @@ def plot_gc(events, title = "benchmark", fignum=0):
 
 
 def plot_membalancer_heap_rule(events, mem_balancer, fignum):
-    time_threshold = [0]
-    heap_limit = [events[4]["new-threshold"]]
+    time_threshold = []
+    heap_limit = []
     nursery_size = events[4]["nursery-size"]
     mem_balancer.nursery_size = nursery_size
-    mem_balancer.s_m_smoothed = 1
-    mem_balancer.s_t_smoothed = 1
-    # mem_balancer.L_smoothed = events[5]["memory-before-collect"]
     total_memory_used_last_minor = 0
     for event in events[1:]:
         if event["task"] == "gc-minor":
@@ -117,36 +119,35 @@ def plot_membalancer_heap_rule(events, mem_balancer, fignum):
             if g_m_next >= 0:
                 # memory allocated since last heartbeat
                 g_m = g_m_next
-                print(f"g_m: {g_m}")
+                #print(f"g_m: {g_m}")
             else:
+                pass
                 # g_m = 0
-                print(f"g_m_next: {g_m_next}")
+                #print(f"g_m_next: {g_m_next}")
             total_memory_used_last_minor = event["memory-after-collect"]
             g_t = event["time-last-minor-gc"]  # time since last heartbeat
             mem_balancer.on_heartbeat(g_m, g_t)
             time_threshold.append(event["time-start"])
             heap_limit.append(mem_balancer.compute_M())
-            print(f"heap_limit: {mem_balancer.heap_limit}, E: {
-                  mem_balancer.E}")
+            #print(f"heap_limit: {mem_balancer.heap_limit}, E: {mem_balancer.E}")
         elif event["task"] == "gc-collect-step":
             if "SCANNING" in event["text"]:
-                print("major collect start")
+                #print("major collect start")
                 time_taken = event["time-taken"]
             else:
                 time_taken += event["time-taken"]
         elif event["task"] == "gc-collect-done":
-            time_threshold.append(event["time-start"])
+            time_threshold.append(event["time-start"]+ event["time-taken"])
             bytes_collected = event["bytes-collected"]
             time_taken += event["time-taken"]
             live_memory = event["memory-after-collect"]
             mem_balancer.on_gc(bytes_collected, time_taken, live_memory)
             # mem_balancer.on_heartbeat()
-            print(f"s_m_smoothed: {mem_balancer.s_m_smoothed}, s_t_smoothed: {mem_balancer.s_t_smoothed}, g_m_smoothed: {
-                  mem_balancer.g_m_smoothed}, g_t_smoothed: {mem_balancer.g_t_smoothed}")
+            #print(f"s_m_smoothed: {mem_balancer.s_m_smoothed}, s_t_smoothed: {mem_balancer.s_t_smoothed}, g_m_smoothed: {
+            #      mem_balancer.g_m_smoothed}, g_t_smoothed: {mem_balancer.g_t_smoothed}")
             heap_limit.append(mem_balancer.compute_M())
-            print(f"heap_limit: {mem_balancer.heap_limit}, E: {
-                  mem_balancer.E}")
-            print("major collect done")
+            #print(f"heap_limit: {mem_balancer.heap_limit}, E: {mem_balancer.E}")
+            #print("major collect done")
 
     t = np.linspace(0, events[-1]["time-start"], len(time_threshold)*50)[1:]
     index = np.searchsorted(time_threshold, t, 'right')
