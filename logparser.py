@@ -62,6 +62,38 @@ def get_events_from(path):
             elif "nursery size" in line:
                 splitted_line = line.split(":")
                 currentDict["nursery-size"] = int(splitted_line[1])
+            
+            elif "total size of surviving objects" in line:
+                splitted_line = line.split(":")
+                currentDict["surviving-objects"] = int(splitted_line[1])
+            
+            elif "membalancer on_gc L" in line:
+                splitted_line = line.split(":")
+                currentDict["L"] = float(splitted_line[1])
+
+            elif "membalancer on_gc s_m" in line:
+                splitted_line = line.split(":")
+                currentDict["s_m"] = float(splitted_line[1])
+
+            elif "membalancer on_gc s_t" in line:
+                splitted_line = line.split(":")
+                currentDict["s_t"] = float(splitted_line[1])
+
+            elif "membalancer on_gc s_m_smoothed" in line:
+                splitted_line = line.split(":")
+                currentDict["s_m_smoothed"] = float(splitted_line[1])
+
+            elif "membalancer on_gc s_t_smoothed" in line:
+                splitted_line = line.split(":")
+                currentDict["s_t_smoothed"] = float(splitted_line[1])
+            
+            elif "membalancer compute_threshold" in line:
+                splitted_line = line.split(":")
+                currentDict["membalancer-compute_threshold"] = float(splitted_line[1])
+
+            elif "next major collection threshold" in line:
+                splitted_line = line.split(":")
+                currentDict["membalancer-limit"] = float(splitted_line[1])
 
             else:
                 currentDict["text"] += line
