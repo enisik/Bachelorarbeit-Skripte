@@ -1,4 +1,59 @@
+class LogData:
+    time_memory, memory = [], []
+    time_threshold, threshold = [], []
+    time_gc_collect_start, time_gc_collect_end = [], []
+    time_major_gc_start, time_major_gc_end = [], []
+    time_heartbeat, time_on_gc = [], []
+    g_m_list, g_m_smoothed_list, g_t_list, g_t_smoothed_list = [], [], [], []
+    s_m_list, s_m_smoothed_list, s_t_list, s_t_smoothed_list = [], [], [], []
 
+
+    def __init__(self, path):
+        self.gc_events = [event for event in get_events_from(path) if event["task"]
+                     == "gc-minor" or "gc-collect" in event["task"]]
+
+        self.time_threshold.append(0)
+        self.threshold.append(events[4]["new-threshold"])
+
+        for event in self.gc_events:
+            if event["task"] == "gc-minor":
+                self.time_memory.append(event["time-start"])
+                self.memory.append(event["memory-before-collect"])
+                self.time_memory.append(self.time_memory[-1] + event["time-taken"])
+                self.memory.append(event["memory-after-collect"])
+                self.time_heartbeat.append((self.time_memory[-2] + self.time_memory[-1])/2)
+                self.g_m_list.append(event["g_m"])
+                self.g_m_smoothed_list.append(event["g_m_smoothed"])
+                self.g_t_list.append(event["g_t"])
+                self.g_t_smoothed_list.append(event["g_t_smoothed"])
+            else:
+                self.time_gc_collect_start.append(event["time-start"])
+                self.time_gc_collect_end.append(
+                    self.time_gc_collect_start[-1] + event["time-taken"])
+                if "gc-collect-done" == event["task"]:
+                    time = self.time_gc_collect_end[-1]
+                    self.time_threshold.append(time)
+                    self.threshold.append(event["membalancer-compute_threshold"])
+
+                    self.time_heartbeat.append(
+                        (self.time_gc_collect_start+self.time_gc_collect_end)/2)
+                    self.g_m_list.append(event["g_m"])
+                    self.g_m_smoothed_list.append(event["g_m_smoothed"])
+                    self.g_t_list.append(event["g_t"])
+                    self.g_t_smoothed_list.append(event["g_t_smoothed"])
+
+                    self.time_on_gc.append(time)
+                    self.s_m_list.append(event["s_m"])
+                    self.s_m_smoothed_list.append(event["s_m_smoothed"])
+                    self.s_t_list.append(event["s_t"])
+                    self.s_t_smoothed_list.append(event["s_t_smoothed"])
+
+                elif "FINALIZING" in event["text"]:
+                    self.time_major_gc_end.append(self.time_gc_collect_end[-1])
+                elif "SCANNING" in event["text"]:
+                    self.time_major_gc_start.append(self.time_gc_collect_start[-1])
+
+        self.time_threshold.append(self.time_memory[-1]), self.threshold.append(self.threshold[-1])
 
 def get_events_from(path):
     # 
