@@ -1,14 +1,15 @@
 class LogData:
-    time_memory, memory = [], []
-    time_threshold, threshold, membalancer_compute_threshold, membalancer_limit = [], [], [], []
-    time_gc_collect_start, time_gc_collect_end = [], []
-    time_major_gc_start, time_major_gc_end = [], []
-    time_heartbeat, time_on_gc = [], []
-    g_m_list, g_m_smoothed_list, g_t_list, g_t_smoothed_list = [], [], [], []
-    s_m_list, s_m_smoothed_list, s_t_list, s_t_smoothed_list = [], [], [], []
-
 
     def __init__(self, path):
+        self.time_memory, self.memory = [], []
+        self.time_threshold, self.threshold = [], []
+        self.membalancer_compute_threshold, self.membalancer_limit = [], []
+        self.time_gc_collect_start, self.time_gc_collect_end = [], []
+        self.time_major_gc_start, self.time_major_gc_end = [], []
+        self.time_heartbeat = []
+        self.g_m_list, self.g_m_smoothed_list, self.g_t_list, self.g_t_smoothed_list = [], [], [], []
+        self.time_on_gc = []
+        self.s_m_list, self.s_m_smoothed_list, self.s_t_list, self.s_t_smoothed_list = [], [], [], []
         events = get_events_from(path)
         self.gc_events = [event for event in events if event["task"]
                      == "gc-minor" or "gc-collect" in event["task"]]
