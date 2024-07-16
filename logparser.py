@@ -1,6 +1,6 @@
 class LogData:
     time_memory, memory = [], []
-    time_threshold, threshold = [], []
+    time_threshold, threshold, membalancer_compute_threshold, membalancer_limit = [], [], [], []
     time_gc_collect_start, time_gc_collect_end = [], []
     time_major_gc_start, time_major_gc_end = [], []
     time_heartbeat, time_on_gc = [], []
@@ -35,7 +35,9 @@ class LogData:
                 if "gc-collect-done" == event["task"]:
                     time = self.time_gc_collect_end[-1]
                     self.time_threshold.append(time)
-                    self.threshold.append(event["membalancer-compute_threshold"])
+                    self.threshold.append(event["new-threshold"])
+                    self.membalancer_compute_threshold.append(
+                        event["membalancer-compute_threshold"])
 
                     self.time_on_gc.append(time)
                     self.s_m_list.append(event["s_m"])
@@ -157,10 +159,6 @@ def get_events_from(path):
             elif "membalancer compute_threshold" in line:
                 splitted_line = line.split(":")
                 currentDict["membalancer-compute_threshold"] = float(splitted_line[1])
-
-            elif "next major collection threshold" in line:
-                splitted_line = line.split(":")
-                currentDict["membalancer-limit"] = float(splitted_line[1])
 
             else:
                 currentDict["text"] += line
