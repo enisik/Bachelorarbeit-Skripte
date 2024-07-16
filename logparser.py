@@ -48,7 +48,8 @@ class LogData:
                 elif "SCANNING" in event["text"]:
                     self.time_major_gc_start.append(self.time_gc_collect_start[-1])
 
-        self.time_threshold.append(self.time_memory[-1]), self.threshold.append(self.threshold[-1])
+        self.time_threshold.append(self.time_memory[-1])
+        self.threshold.append(self.threshold[-1])
 
 def get_events_from(path):
     # 
