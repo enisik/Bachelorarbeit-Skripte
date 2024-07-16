@@ -9,12 +9,14 @@ class LogData:
 
 
     def __init__(self, path):
-        self.gc_events = [event for event in get_events_from(path) if event["task"]
+        events = get_events_from(path)
+        self.gc_events = [event for event in events if event["task"]
                      == "gc-minor" or "gc-collect" in event["task"]]
 
         self.time_threshold.append(0)
         self.threshold.append(events[4]["new-threshold"])
 
+        
         for event in self.gc_events:
             if event["task"] == "gc-minor":
                 self.time_memory.append(event["time-start"])
@@ -34,13 +36,6 @@ class LogData:
                     time = self.time_gc_collect_end[-1]
                     self.time_threshold.append(time)
                     self.threshold.append(event["membalancer-compute_threshold"])
-
-                    self.time_heartbeat.append(
-                        (self.time_gc_collect_start+self.time_gc_collect_end)/2)
-                    self.g_m_list.append(event["g_m"])
-                    self.g_m_smoothed_list.append(event["g_m_smoothed"])
-                    self.g_t_list.append(event["g_t"])
-                    self.g_t_smoothed_list.append(event["g_t_smoothed"])
 
                     self.time_on_gc.append(time)
                     self.s_m_list.append(event["s_m"])
@@ -125,6 +120,14 @@ def get_events_from(path):
             elif "membalancer on_gc L" in line:
                 splitted_line = line.split(":")
                 currentDict["L"] = float(splitted_line[1])
+            
+            elif "membalancer on_gc s_m_smoothed" in line:
+                splitted_line = line.split(":")
+                currentDict["s_m_smoothed"] = float(splitted_line[1])
+
+            elif "membalancer on_gc s_t_smoothed" in line:
+                splitted_line = line.split(":")
+                currentDict["s_t_smoothed"] = float(splitted_line[1])
 
             elif "membalancer on_gc s_m" in line:
                 splitted_line = line.split(":")
@@ -134,13 +137,13 @@ def get_events_from(path):
                 splitted_line = line.split(":")
                 currentDict["s_t"] = float(splitted_line[1])
 
-            elif "membalancer on_gc s_m_smoothed" in line:
+            elif "membalancer on_heartbeat g_m_smoothed" in line:
                 splitted_line = line.split(":")
-                currentDict["s_m_smoothed"] = float(splitted_line[1])
+                currentDict["g_m_smoothed"] = float(splitted_line[1])
 
-            elif "membalancer on_gc s_t_smoothed" in line:
+            elif "membalancer on_heartbeat g_t_smoothed" in line:
                 splitted_line = line.split(":")
-                currentDict["s_t_smoothed"] = float(splitted_line[1])
+                currentDict["g_t_smoothed"] = float(splitted_line[1])
 
             elif "membalancer on_heartbeat g_m" in line:
                 splitted_line = line.split(":")
@@ -150,14 +153,6 @@ def get_events_from(path):
                 splitted_line = line.split(":")
                 currentDict["g_t"] = float(splitted_line[1])
 
-            elif "membalancer on_heartbeat g_m_smoothed" in line:
-                splitted_line = line.split(":")
-                currentDict["g_m_smoothed"] = float(splitted_line[1])
-
-            elif "membalancer on_heartbeat g_t_smoothed" in line:
-                splitted_line = line.split(":")
-                currentDict["g_t_smoothed"] = float(splitted_line[1])
-            
             elif "membalancer compute_threshold" in line:
                 splitted_line = line.split(":")
                 currentDict["membalancer-compute_threshold"] = float(splitted_line[1])
