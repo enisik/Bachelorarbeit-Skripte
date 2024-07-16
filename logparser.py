@@ -53,6 +53,7 @@ class LogData:
 
         self.time_threshold.append(self.time_memory[-1])
         self.threshold.append(self.threshold[-1])
+        self.membalancer_compute_threshold.append(self.membalancer_compute_threshold[-1])
 
 def get_events_from(path):
     # 
