@@ -21,11 +21,11 @@ def get_events_from(path):
                 if splitted_line[1][:-1] == "gc-collect-done":
                     currentDict["task"] = "gc-collect-done"
                 else:
-                    currentDict = {"start": splitted_line[0][1:-2], "task": splitted_line[1][:-1], "text": ""}
+                    currentDict = {"start-stamp": splitted_line[0][1:-2], "task": splitted_line[1][:-1], "text": ""}
             
             elif end.match(line) and "gc-collect-done" not in line:
                 splitted_line = line.split("]")
-                currentDict["end"] = splitted_line[0][1:]
+                currentDict["end-stamp"] = splitted_line[0][1:]
                 yield currentDict
             
             elif "time since program start" in line:
