@@ -29,6 +29,11 @@ class LogData:
                 self.g_m_smoothed_list.append(event["g_m_smoothed"])
                 self.g_t_list.append(event["g_t"])
                 self.g_t_smoothed_list.append(event["g_t_smoothed"])
+                if "new-threshold" in event:
+                    self.time_threshold.append(self.time_memory[-1])
+                    self.threshold.append(event["new-threshold"])
+                    self.membalancer_compute_threshold.append(
+                        event["membalancer-compute_threshold"])
             else:
                 self.time_gc_collect_start.append(event["time-start"])
                 self.time_gc_collect_end.append(

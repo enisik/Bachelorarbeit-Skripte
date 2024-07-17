@@ -156,7 +156,7 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fignum=0):
 
     plt.close(fignum)
     #fig = plt.figure(fignum, figsize=(13, 9))
-    fig, ax = plt.subplots(4, 1, sharex=True, num=fignum, figsize=(15, 12))
+    fig, ax = plt.subplots(4, 1, sharex=True, num=fignum, figsize=(13, 12))
     fig.suptitle(title, fontsize=16)
 
     for a in ax:
@@ -165,7 +165,7 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fignum=0):
         plot_area(log_data.time_gc_collect_start,
                   log_data.time_gc_collect_end, a, alpha=0.4, color='red')
         plot_area(log_data.time_major_gc_start,
-              log_data.time_major_gc_end, a, alpha=0.2, color='blue')
+                  log_data.time_major_gc_end, a, alpha=0.2, color='blue')
     
     ax[0].plot(log_data.time_memory, log_data.memory,
             'b-', label="heap usage at minor gc")
