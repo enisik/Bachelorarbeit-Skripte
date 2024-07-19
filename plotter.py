@@ -1,13 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import EngFormatter
+from matplotlib.widgets import CheckButtons
 from logparser import LogData
 
 def plot_area(starts, ends, ax, alpha, color):
     for i in range(len(starts)):
         ax.axvspan(starts[i], ends[i], alpha=alpha, color=color)
 
-def plot_gc(events, title="benchmark", fignum=0):
+def plot_gc(events, title="benchmark", fig_num=0):
     gc_events = [event for event in events if event["task"] == "gc-minor" or "gc-collect" in event["task"]]
     
     time_memory, memory = [], []
@@ -35,7 +36,7 @@ def plot_gc(events, title="benchmark", fignum=0):
     time_threshold.append(time_memory[-1])
     threshold.append(threshold[-1])
 
-    fig = plt.figure(fignum, figsize=(13, 9))
+    fig = plt.figure(fig_num, figsize=(13, 9))
     plt.clf()
     fig.suptitle(title, fontsize=16)
     fig.canvas.header_visible = False
@@ -50,7 +51,7 @@ def plot_gc(events, title="benchmark", fignum=0):
     ax.xaxis.set_major_formatter(EngFormatter("s"))
     ax.legend(loc='best',  ncol=2, fancybox=True)
 
-def plot_membalancer_heap_rule(events, mem_balancer, fignum):
+def plot_membalancer_heap_rule(events, mem_balancer, fig_num):
     time_threshold = []
     heap_limit = []
     nursery_size = events[4]["nursery-size"]
@@ -101,7 +102,7 @@ def plot_membalancer_heap_rule(events, mem_balancer, fignum):
             s_m_smoothed_list.append(mem_balancer.s_m_smoothed)
             s_t_smoothed_list.append(mem_balancer.s_t_smoothed)
 
-    fig = plt.figure(fignum)
+    fig = plt.figure(fig_num)
     fig.tight_layout()
     fig.subplots_adjust(hspace=0.15, bottom=0.05)
     fig.set_facecolor('slategrey')
@@ -137,7 +138,12 @@ def plot_membalancer_heap_rule(events, mem_balancer, fignum):
     ax.legend(loc='best', ncol=2, fancybox=True)
 
 
-def plot_full_gc_info(log_data : LogData, title="benchmark", fignum=0):
+def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0):
+    def callback(label, lines_by_label):
+        ln = lines_by_label[label]
+        ln.set_visible(not ln.get_visible())
+        ln.figure.canvas.draw_idle()
+    
     g_m_list = np.array(log_data.g_m_list)
     g_m_smoothed_list = np.array(log_data.g_m_smoothed_list)
     g_t_list = np.array(log_data.g_t_list)
@@ -154,57 +160,130 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fignum=0):
     s_t_list = np.array(log_data.s_t_list)
     s_t_smoothed_list = np.array(log_data.s_t_smoothed_list)
 
-    plt.close(fignum)
-    #fig = plt.figure(fignum, figsize=(13, 9))
-    fig, ax = plt.subplots(4, 1, sharex=True, num=fignum, figsize=(13, 12))
+    plt.close(fig_num)
+    #fig, ax = plt.subplots(4, 1, sharex=True, num=fig_num, figsize=(13, 12))
+    fig, ax = plt.subplot_mosaic([
+        [0, 'leg0'],
+        [1, 'leg1'],
+        [2, 'leg2']
+        #[3, 'leg']
+    ],
+        width_ratios=[5, 1],
+        figsize=(15, 9),
+        num=fig_num
+        )
     fig.suptitle(title, fontsize=16)
 
-    for a in ax:
+    for i in range(3):
+        a = ax[i]
         a.grid()
         a.tick_params(labelbottom=True)
+        a.set_facecolor('gainsboro')
         plot_area(log_data.time_gc_collect_start,
                   log_data.time_gc_collect_end, a, alpha=0.4, color='red')
         plot_area(log_data.time_major_gc_start,
                   log_data.time_major_gc_end, a, alpha=0.2, color='blue')
+        ax[f'leg{i}'].set_facecolor('lightgoldenrodyellow')
     
-    ax[0].plot(log_data.time_memory, log_data.memory,
-            'b-', label="heap usage at minor gc")
-    ax[0].step(log_data.time_threshold, log_data.threshold,
-           'r', where='post', label="next major collection threshold")
-    ax[0].step(log_data.time_threshold[1:], log_data.membalancer_compute_threshold,
-               'k', where='post', label="membalancer-compute_threshold")
+    ax0_lines_by_label = dict()
+    ax1_lines_by_label = dict()
+    ax2_lines_by_label = dict()
+
+    line, = ax[0].plot(log_data.time_memory, log_data.memory,
+            'b-', label="heap usage")
+    ax0_lines_by_label[line.get_label()] = line
+    line, = ax[0].step(log_data.time_threshold, log_data.threshold,
+           'r', where='post', label="threshold")
+    ax0_lines_by_label[line.get_label()] = line
+    line, = ax[0].step(log_data.time_threshold[1:], log_data.membalancer_compute_threshold,
+               'k', where='post', label="compute_threshold")
+    ax0_lines_by_label[line.get_label()] = line
     ax[0].yaxis.set_major_formatter(EngFormatter("B"))
     ax[0].xaxis.set_major_formatter(EngFormatter("s"))
-    ax[0].legend(loc='best',  ncol=2, fancybox=True)
+    #ax[0].legend(loc='best',  ncol=2, fancybox=True)
 
-    ax[1].plot(log_data.time_heartbeat, g_m_list, label="$g_m$")
-    ax[1].plot(log_data.time_heartbeat, g_m_smoothed_list, label="$g_m^{*}$")
-    ax[1].step(log_data.time_on_gc, s_m_list, where='post', label="$s_m$")
-    ax[1].step(log_data.time_on_gc, s_m_smoothed_list,
+    line, = ax[0].plot(log_data.time_heartbeat, g_m_list, 'goldenrod', label="$g_m$")
+    ax0_lines_by_label[line.get_label()] = line
+    line, = ax[0].plot(log_data.time_heartbeat, g_m_smoothed_list, 'darkorange', label="$g_m^{*}$")
+    ax0_lines_by_label[line.get_label()] = line
+    line, = ax[0].step(log_data.time_on_gc, s_m_list, 'darkgreen', where='post', label="$s_m$")
+    ax0_lines_by_label[line.get_label()] = line
+    line, = ax[0].step(log_data.time_on_gc, s_m_smoothed_list, 'limegreen',
                where='post', label="$s_m^{*}$")
-    ax[1].yaxis.set_major_formatter(EngFormatter("B"))
-    ax[1].xaxis.set_major_formatter(EngFormatter("s"))
-    ax[1].legend(loc='best', ncol=2, fancybox=True)
+    ax0_lines_by_label[line.get_label()] = line
+    #ax[1].yaxis.set_major_formatter(EngFormatter("B"))
+    #ax[1].xaxis.set_major_formatter(EngFormatter("s"))
+    #ax[1].legend(loc='best', ncol=2, fancybox=True)
 
-    ax[2].plot(log_data.time_heartbeat, g_t_list, label="$g_t$")
-    ax[2].plot(log_data.time_heartbeat, g_t_smoothed_list, label="$g_t^{*}$")
-    ax[2].step(log_data.time_on_gc, s_t_list, where='post', label="$s_t$")
-    ax[2].step(log_data.time_on_gc, s_t_smoothed_list,
+    line, = ax[1].plot(log_data.time_heartbeat, g_t_list,
+                       'goldenrod', label="$g_t$")
+    ax1_lines_by_label[line.get_label()] = line
+    line, = ax[1].plot(log_data.time_heartbeat,
+                       g_t_smoothed_list, 'darkorange', label="$g_t^{*}$")
+    ax1_lines_by_label[line.get_label()] = line
+    line, = ax[1].step(log_data.time_on_gc, s_t_list,
+                       'darkgreen', where='post', label="$s_t$")
+    ax1_lines_by_label[line.get_label()] = line
+    line, = ax[1].step(log_data.time_on_gc, s_t_smoothed_list, 'limegreen',
                where='post', label="$s_t^{*}$")
-    ax[2].yaxis.set_major_formatter(EngFormatter("s"))
-    ax[2].xaxis.set_major_formatter(EngFormatter("s"))
-    ax[2].legend(loc='best', ncol=2, fancybox=True)
+    ax1_lines_by_label[line.get_label()] = line
+    ax[1].yaxis.set_major_formatter(EngFormatter("s"))
+    ax[1].xaxis.set_major_formatter(EngFormatter("s"))
+    #ax[1].legend(loc='best', ncol=2, fancybox=True)
 
-    ax[3].plot(log_data.time_heartbeat, g_m_list/g_t_list, label="$g_m / g_t$")
-    ax[3].plot(log_data.time_heartbeat, g_m_smoothed_list /
-            log_data.g_t_smoothed_list, label="$g_m^{*} / g_t^{*}$")
-    ax[3].step(log_data.time_on_gc, s_m_list/s_t_list,
+    line, = ax[2].plot(log_data.time_heartbeat, g_m_list /
+                       g_t_list, 'goldenrod', label="$g_m / g_t$")
+    ax2_lines_by_label[line.get_label()] = line
+    line, = ax[2].plot(log_data.time_heartbeat, g_m_smoothed_list /
+                       log_data.g_t_smoothed_list, 'darkorange', label="$g_m^{*} / g_t^{*}$")
+    ax2_lines_by_label[line.get_label()] = line
+    line, = ax[2].step(log_data.time_on_gc, s_m_list/s_t_list, 'darkgreen',
                where='post', label="$s_m / s_t$")
-    ax[3].step(log_data.time_on_gc, s_m_smoothed_list /
-               log_data.s_t_smoothed_list, where='post', label="$s_m^{*} / s_t^{*}$")
-    ax[3].yaxis.set_major_formatter(EngFormatter("B/s"))
-    ax[3].xaxis.set_major_formatter(EngFormatter("s"))
-    ax[3].legend(loc='best', ncol=2, fancybox=True)
+    ax2_lines_by_label[line.get_label()] = line
+    line, = ax[2].step(log_data.time_on_gc, s_m_smoothed_list /
+                       log_data.s_t_smoothed_list, 'limegreen', where='post', label="$s_m^{*} / s_t^{*}$")
+    ax2_lines_by_label[line.get_label()] = line
+    ax[2].yaxis.set_major_formatter(EngFormatter("B/s"))
+    ax[2].xaxis.set_major_formatter(EngFormatter("s"))
+    #ax[2].legend(loc='best', ncol=2, fancybox=True)
+
+    ax0_line_colors = [l.get_color() for l in ax0_lines_by_label.values()]
+    ax0_check = CheckButtons(
+        ax= ax['leg0'],
+        labels=ax0_lines_by_label.keys(),
+        actives=[l.get_visible() for l in ax0_lines_by_label.values()],
+        label_props={'color': ax0_line_colors, 'size': 
+                ['large'] * len(ax0_lines_by_label)},
+        frame_props={'edgecolor': ax0_line_colors},
+        check_props={'facecolor': ax0_line_colors},
+    )
+
+    ax1_line_colors = [l.get_color() for l in ax1_lines_by_label.values()]
+    ax1_check = CheckButtons(
+        ax=ax['leg1'],
+        labels=ax1_lines_by_label.keys(),
+        actives=[l.get_visible() for l in ax1_lines_by_label.values()],
+        label_props={'color': ax1_line_colors, 'size': 
+            ['x-large'] * len(ax1_lines_by_label)},
+        frame_props={'edgecolor': ax1_line_colors},
+        check_props={'facecolor': ax1_line_colors},
+    )
+
+    ax2_line_colors = [l.get_color() for l in ax2_lines_by_label.values()]
+    ax2_check = CheckButtons(
+        ax=ax['leg2'],
+        labels=ax2_lines_by_label.keys(),
+        actives=[l.get_visible() for l in ax2_lines_by_label.values()],
+        label_props={'color': ax2_line_colors, 'size':
+                     ['x-large'] * len(ax2_lines_by_label)}, 
+        frame_props={'edgecolor': ax2_line_colors},
+        check_props={'facecolor': ax2_line_colors},
+    )
+
+    ax0_check.on_clicked(lambda label: callback(label, ax0_lines_by_label))
+    ax1_check.on_clicked(lambda label: callback(label, ax1_lines_by_label))
+    ax2_check.on_clicked(lambda label: callback(label, ax2_lines_by_label))
+
 
     fig.canvas.header_visible = False
     fig.tight_layout()
