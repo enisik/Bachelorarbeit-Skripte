@@ -1,8 +1,8 @@
+from logparser import LogData
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.ticker import EngFormatter
 from matplotlib.widgets import CheckButtons
-from logparser import LogData
+import numpy as np
 
 def plot_area(starts, ends, ax, alpha, color):
     for i in range(len(starts)):
