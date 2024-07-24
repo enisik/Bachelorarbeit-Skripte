@@ -1,3 +1,6 @@
+from os import listdir
+from os.path import isfile, join
+
 class LogData:
 
     def __init__(self, path):
@@ -13,13 +16,12 @@ class LogData:
         events = get_events_from(path)
         self.gc_events = [event for event in events if event["task"]
                      == "gc-minor" or "gc-collect" in event["task"]]
-
-        self.time_threshold.append(0)
-        self.threshold.append(events[4]["new-threshold"])
-
+        self.minor_gcs = 0
+        self.major_gcs = 0
         
         for event in self.gc_events:
             if event["task"] == "gc-minor":
+                self.minor_gcs += 1
                 self.time_memory.append(event["time-start"])
                 self.memory.append(event["memory-before-collect"])
                 self.time_memory.append(self.time_memory[-1] + event["time-taken"])
@@ -39,6 +41,7 @@ class LogData:
                 self.time_gc_collect_end.append(
                     self.time_gc_collect_start[-1] + event["time-taken"])
                 if "gc-collect-done" == event["task"]:
+                    self.major_gcs += 1
                     time = self.time_gc_collect_end[-1]
                     self.time_threshold.append(time)
                     self.threshold.append(event["new-threshold"])
@@ -56,6 +59,8 @@ class LogData:
                 elif "SCANNING" in event["text"]:
                     self.time_major_gc_start.append(self.time_gc_collect_start[-1])
 
+        self.time_threshold.insert(0,0)
+        self.threshold.insert(0, self.threshold[0])
         self.time_threshold.append(self.time_memory[-1])
         self.threshold.append(self.threshold[-1])
         self.membalancer_compute_threshold.append(self.membalancer_compute_threshold[-1])
@@ -170,10 +175,15 @@ def get_events_from(path):
             else:
                 currentDict["text"] += line
 
-
     with open(path, "r") as f:
         events = list(generateDicts(f))
     return events
+
+
+def get_log_data_from_folder(folder):
+    only_files = [path for file in listdir(folder) if isfile(path := join(folder, file))]
+    data_from_logs = [LogData(path) for path in only_files]
+    return data_from_logs
 
 if __name__ == "__main__":
     events = get_events_from("logs/gcbench")
