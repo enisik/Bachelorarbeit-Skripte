@@ -289,3 +289,78 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0):
     fig.tight_layout()
     fig.subplots_adjust(hspace=0.09, bottom=0.05)
     fig.set_facecolor('slategrey')
+
+
+def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[int], fig_num: int, title="benchmark data"):
+    total_major_gc_time_per_param = []
+    avg_max_heap_use_per_param = []
+    total_heap_use_per_param = []
+    runtime_per_param = []
+
+    for bench in benchmark:
+        total_major_gc_time = []
+        max_heap_use = []
+        runtimes = []
+        for prog_run in bench:
+            time = 0
+            for i in range(len(prog_run.time_major_gc_start)):
+                time += prog_run.time_gc_collect_end[i] - \
+                    prog_run.time_gc_collect_start[i]
+            total_major_gc_time.append(time)
+            max_heap_use.append(max(prog_run.memory))
+            runtimes.append(prog_run.gc_events[-1]["time-start"])
+
+        total_heap_use_per_param.append(max_heap_use)
+        avg_max_heap_use_per_param.append(np.average(max_heap_use))
+        total_major_gc_time_per_param.append(total_major_gc_time)
+        runtime_per_param.append(runtimes)
+    
+    plt.close(fig_num)
+    fig, ax = plt.subplot_mosaic([
+        [0],
+        [1],
+        [2],
+        [3],
+        [4]
+    ],
+        figsize=(13, 18),
+        num=fig_num
+    )
+    fig.suptitle(title, fontsize=16)
+
+    ax[0].boxplot(total_major_gc_time_per_param, showfliers=True)
+    ax[0].set_xticklabels(tuning_factors)
+    ax[0].axes.set_ylabel("total major gc collection time")
+    ax[0].axes.set_xlabel("tuning factor (rounded)")
+    ax[0].yaxis.set_major_formatter(EngFormatter("s"))
+
+    ax[1].boxplot(total_heap_use_per_param, showfliers=True)
+    ax[1].set_xticklabels(tuning_factors)
+    ax[1].axes.set_xlabel("tuning factor (rounded)")
+    ax[1].axes.set_ylabel("total heap usage (max value from minor debug info)")
+    ax[1].yaxis.set_major_formatter(EngFormatter("B"))
+
+    ax[2].boxplot(runtime_per_param, showfliers=True)
+    ax[2].set_xticklabels(tuning_factors)
+    ax[2].axes.set_xlabel("tuning factor (rounded)")
+    ax[2].axes.set_ylabel("runtime (time of last event since start)")
+    ax[2].yaxis.set_major_formatter(EngFormatter("s"))
+
+    for i in range(len(total_heap_use_per_param)):
+        ax[3].scatter(total_heap_use_per_param[i], total_major_gc_time_per_param[i])
+        ax[4].scatter(total_heap_use_per_param[i], runtime_per_param[i])
+    
+    ax[3].yaxis.set_major_formatter(EngFormatter("s"))
+    ax[3].xaxis.set_major_formatter(EngFormatter("B"))
+    ax[3].axes.set_ylabel("total major gc collection time")
+    ax[3].axes.set_xlabel("total heap usage (avg of max value per iteration)")
+    #plt.ylim(bottom=0)
+    #plt.xlim(left=0)
+
+    ax[4].yaxis.set_major_formatter(EngFormatter("s"))
+    ax[4].xaxis.set_major_formatter(EngFormatter("B"))
+    ax[4].axes.set_ylabel("runtime (time of last event since start)")
+    ax[4].axes.set_xlabel("total heap usage (avg of max value per iteration)")
+
+    fig.canvas.header_visible = False
+    fig.tight_layout()
