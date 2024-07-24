@@ -353,14 +353,14 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[int], fig
     ax[3].yaxis.set_major_formatter(EngFormatter("s"))
     ax[3].xaxis.set_major_formatter(EngFormatter("B"))
     ax[3].axes.set_ylabel("total major gc collection time")
-    ax[3].axes.set_xlabel("total heap usage (avg of max value per iteration)")
+    ax[3].axes.set_xlabel("total heap usage (max value of iteration)")
     #plt.ylim(bottom=0)
     #plt.xlim(left=0)
 
     ax[4].yaxis.set_major_formatter(EngFormatter("s"))
     ax[4].xaxis.set_major_formatter(EngFormatter("B"))
     ax[4].axes.set_ylabel("runtime (time of last event since start)")
-    ax[4].axes.set_xlabel("total heap usage (avg of max value per iteration)")
+    ax[4].axes.set_xlabel("total heap usage (max value of iteration)")
 
     fig.canvas.header_visible = False
     fig.tight_layout()
