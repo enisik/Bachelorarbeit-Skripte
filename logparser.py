@@ -1,5 +1,7 @@
+import numpy as np
 from os import listdir
 from os.path import isfile, join
+import pandas as pd
 
 class LogData:
 
@@ -65,7 +67,7 @@ class LogData:
         self.threshold.append(self.threshold[-1])
         self.membalancer_compute_threshold.append(self.membalancer_compute_threshold[-1])
 
-def get_events_from(path):
+def get_events_from(path : str):
     # 
     # https://stackoverflow.com/questions/30627810/how-to-parse-this-custom-log-file-in-python
     #
@@ -180,10 +182,48 @@ def get_events_from(path):
     return events
 
 
-def get_log_data_from_folder(folder):
+def get_log_data_from_folder(folder : str) -> list[LogData]:
     only_files = [path for file in listdir(folder) if isfile(path := join(folder, file))]
     data_from_logs = [LogData(path) for path in only_files]
     return data_from_logs
+
+
+def get_stats_from_log_data(benchmark: list[list[LogData]], tuning_factors: list[int]):
+    total_major_gc_time_per_param = []
+    avg_max_heap_use_per_param = []
+    total_heap_use_per_param = []
+    runtime_per_param = []
+    avg_runtime_per_param = []
+    data_frames = []
+
+    for bench in benchmark:
+        total_major_gc_time = []
+        max_heap_use = []
+        runtimes = []
+        for prog_run in bench:
+            time = 0
+            for i in range(len(prog_run.time_major_gc_start)):
+                time += prog_run.time_gc_collect_end[i] - \
+                    prog_run.time_gc_collect_start[i]
+            total_major_gc_time.append(time)
+            max_heap_use.append(max(prog_run.memory))
+            runtimes.append(prog_run.gc_events[-1]["time-start"])
+
+        total_heap_use_per_param.append(max_heap_use)
+        avg_max_heap_use_per_param.append(np.average(max_heap_use))
+        total_major_gc_time_per_param.append(total_major_gc_time)
+        runtime_per_param.append(runtimes)
+        avg_runtime_per_param.append(np.average(runtimes))
+        data = np.vstack([max_heap_use, total_major_gc_time, runtimes]).T
+        data_frames.append(pd.DataFrame(data, columns=[
+            "max heap", "total major gc time", "runtime"]))
+
+    data = np.vstack([avg_max_heap_use_per_param, avg_runtime_per_param]).T
+    data_frame = pd.DataFrame(data,
+                     index=tuning_factors, columns=["avg max heap", "avg runtimes"])
+
+    #data_frame.index.name = "tuning factor"
+    return data_frames, data_frame
 
 if __name__ == "__main__":
     events = get_events_from("logs/gcbench")
