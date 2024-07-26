@@ -138,7 +138,7 @@ def plot_membalancer_heap_rule(events, mem_balancer, fig_num):
     ax.legend(loc='best', ncol=2, fancybox=True)
 
 
-def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0):
+def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
     def callback(label, lines_by_label):
         ln = lines_by_label[label]
         ln.set_visible(not ln.get_visible())
@@ -291,7 +291,7 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0):
     fig.set_facecolor('slategrey')
 
 
-def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[int], fig_num: int, title="benchmark data"):
+def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[int], fig_num: int, title="benchmark data") -> None:
     total_major_gc_time_per_param = []
     avg_max_heap_use_per_param = []
     total_heap_use_per_param = []
