@@ -9,7 +9,7 @@ import os
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--it', type=int, required=True, help='Number of iterations', dest="iterations")
+    parser.add_argument('--it', type=int, default=10, help='Number of iterations', dest="iterations")
     parser.add_argument('--c', type=str, required=True,
                         help='compiler/interpreter', dest="compiler_path")
     parser.add_argument('--t', type=str, required=True,
