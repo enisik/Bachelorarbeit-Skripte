@@ -24,7 +24,7 @@ if __name__ == "__main__":
     dest_path_root = os.path.expanduser(arguments.dest_path)
     for tuning_factor in 10 ** np.linspace(2, 5, 20):
         print(
-            f"===============\t\t tuning factor: {tuning_factor} \t\t===============")
+            f"===============\t\t tuning factor: {tuning_factor:<20} \t\t===============")
         dest_path = f"{dest_path_root}/{now}/{tuning_factor}"
         os.makedirs(dest_path)
         env = os_env | {"PYPYLOG": f"gc:{dest_path}/bench-%d", "PYPY_GC_MEMBALANCER_TUNING": str(tuning_factor)}
