@@ -174,7 +174,7 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
         )
     fig.suptitle(title, fontsize=16)
 
-    for i in range(3):
+    for i in ax:
         a = ax[i]
         a.grid()
         a.tick_params(labelbottom=True)
@@ -326,7 +326,10 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[int], fig
         figsize=(13, 18),
         num=fig_num
     )
-    fig.suptitle(title, fontsize=16)
+    fig.suptitle(title, fontsize=16, y=0.993)
+
+    for i in ax:
+        ax[i].grid()
 
     ax[0].boxplot(total_major_gc_time_per_param, showfliers=True)
     ax[0].set_xticklabels(tuning_factors)
@@ -364,3 +367,4 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[int], fig
 
     fig.canvas.header_visible = False
     fig.tight_layout()
+    fig.set_facecolor('slategrey')
