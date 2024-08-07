@@ -5,7 +5,7 @@ import pandas as pd
 
 class LogData:
 
-    def __init__(self, path):
+    def __init__(self, path, mem_balancer=True):
         self.time_memory, self.memory = [], []
         self.time_threshold, self.threshold = [], []
         self.membalancer_compute_threshold, self.membalancer_limit = [], []
@@ -21,51 +21,82 @@ class LogData:
         self.minor_gcs = 0
         self.major_gcs = 0
         
-        for event in self.gc_events:
-            if event["task"] == "gc-minor":
-                self.minor_gcs += 1
-                self.time_memory.append(event["time-start"])
-                self.memory.append(event["memory-before-collect"])
-                self.time_memory.append(self.time_memory[-1] + event["time-taken"])
-                self.memory.append(event["memory-after-collect"])
-                self.time_heartbeat.append((self.time_memory[-2] + self.time_memory[-1])/2)
-                self.g_m_list.append(event["g_m"])
-                self.g_m_smoothed_list.append(event["g_m_smoothed"])
-                self.g_t_list.append(event["g_t"])
-                self.g_t_smoothed_list.append(event["g_t_smoothed"])
-                if "new-threshold" in event:
-                    self.time_threshold.append(self.time_memory[-1])
-                    self.threshold.append(event["new-threshold"])
-                    self.membalancer_compute_threshold.append(
-                        event["membalancer-compute_threshold"])
-            else:
-                self.time_gc_collect_start.append(event["time-start"])
-                self.time_gc_collect_end.append(
-                    self.time_gc_collect_start[-1] + event["time-taken"])
-                if "gc-collect-done" == event["task"]:
-                    self.major_gcs += 1
-                    time = self.time_gc_collect_end[-1]
-                    self.time_threshold.append(time)
-                    self.threshold.append(event["new-threshold"])
-                    self.membalancer_compute_threshold.append(
-                        event["membalancer-compute_threshold"])
+        if mem_balancer:
+            for event in self.gc_events:
+                if event["task"] == "gc-minor":
+                    self.minor_gcs += 1
+                    self.time_memory.append(event["time-start"])
+                    self.memory.append(event["memory-before-collect"])
+                    self.time_memory.append(self.time_memory[-1] + event["time-taken"])
+                    self.memory.append(event["memory-after-collect"])
+                    self.time_heartbeat.append((self.time_memory[-2] + self.time_memory[-1])/2)
+                    self.g_m_list.append(event["g_m"])
+                    self.g_m_smoothed_list.append(event["g_m_smoothed"])
+                    self.g_t_list.append(event["g_t"])
+                    self.g_t_smoothed_list.append(event["g_t_smoothed"])
+                    if "new-threshold" in event:
+                        self.time_threshold.append(self.time_memory[-1])
+                        self.threshold.append(event["new-threshold"])
+                        self.membalancer_compute_threshold.append(
+                            event["membalancer-compute_threshold"])
+                else:
+                    self.time_gc_collect_start.append(event["time-start"])
+                    self.time_gc_collect_end.append(
+                        self.time_gc_collect_start[-1] + event["time-taken"])
+                    if "gc-collect-done" == event["task"]:
+                        self.major_gcs += 1
+                        time = self.time_gc_collect_end[-1]
+                        self.time_threshold.append(time)
+                        self.threshold.append(event["new-threshold"])
+                        self.membalancer_compute_threshold.append(
+                            event["membalancer-compute_threshold"])
 
-                    self.time_on_gc.append(time)
-                    self.s_m_list.append(event["s_m"])
-                    self.s_m_smoothed_list.append(event["s_m_smoothed"])
-                    self.s_t_list.append(event["s_t"])
-                    self.s_t_smoothed_list.append(event["s_t_smoothed"])
+                        self.time_on_gc.append(time)
+                        self.s_m_list.append(event["s_m"])
+                        self.s_m_smoothed_list.append(event["s_m_smoothed"])
+                        self.s_t_list.append(event["s_t"])
+                        self.s_t_smoothed_list.append(event["s_t_smoothed"])
 
-                elif "FINALIZING" in event["text"]:
-                    self.time_major_gc_end.append(self.time_gc_collect_end[-1])
-                elif "SCANNING" in event["text"]:
-                    self.time_major_gc_start.append(self.time_gc_collect_start[-1])
+                    elif "FINALIZING" in event["text"]:
+                        self.time_major_gc_end.append(self.time_gc_collect_end[-1])
+                    elif "SCANNING" in event["text"]:
+                        self.time_major_gc_start.append(self.time_gc_collect_start[-1])
+
+            self.membalancer_compute_threshold.append(
+                self.membalancer_compute_threshold[-1])
+        else:
+            for event in self.gc_events:
+                if event["task"] == "gc-minor":
+                    self.minor_gcs += 1
+                    self.time_memory.append(event["time-start"])
+                    self.memory.append(event["memory-before-collect"])
+                    self.time_memory.append(
+                        self.time_memory[-1] + event["time-taken"])
+                    self.memory.append(event["memory-after-collect"])
+                    if "new-threshold" in event:
+                        self.time_threshold.append(self.time_memory[-1])
+                        self.threshold.append(event["new-threshold"])
+                else:
+                    self.time_gc_collect_start.append(event["time-start"])
+                    self.time_gc_collect_end.append(
+                        self.time_gc_collect_start[-1] + event["time-taken"])
+                    if "gc-collect-done" == event["task"]:
+                        self.major_gcs += 1
+                        time = self.time_gc_collect_end[-1]
+                        self.time_threshold.append(time)
+                        self.threshold.append(event["new-threshold"])
+
+                    elif "FINALIZING" in event["text"]:
+                        self.time_major_gc_end.append(
+                            self.time_gc_collect_end[-1])
+                    elif "SCANNING" in event["text"]:
+                        self.time_major_gc_start.append(
+                            self.time_gc_collect_start[-1])
 
         self.time_threshold.insert(0,0)
         self.threshold.insert(0, self.threshold[0])
         self.time_threshold.append(self.time_memory[-1])
         self.threshold.append(self.threshold[-1])
-        self.membalancer_compute_threshold.append(self.membalancer_compute_threshold[-1])
 
 def get_events_from(path : str):
     # 
@@ -182,9 +213,9 @@ def get_events_from(path : str):
     return events
 
 
-def get_log_data_from_folder(folder : str) -> list[LogData]:
+def get_log_data_from_folder(folder : str, mem_balancer : bool = True) -> list[LogData]:
     only_files = [path for file in listdir(folder) if isfile(path := join(folder, file))]
-    data_from_logs = [LogData(path) for path in only_files]
+    data_from_logs = [LogData(path, mem_balancer) for path in only_files]
     return data_from_logs
 
 
