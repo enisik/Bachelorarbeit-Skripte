@@ -360,8 +360,6 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[int], fig
                       runtime_per_param[i], color=colors[i], alpha=0.5)
         ax[4].plot(np.average(total_heap_use_per_param[i]),
                    np.average(runtime_per_param[i]), color=colors[i], marker='d')
-    print(len(total_heap_use_per_param), len(
-        np.average(total_heap_use_per_param, axis=1)))
     ax[3].plot(np.average(total_heap_use_per_param, axis=1),
                np.average(total_major_gc_time_per_param, axis=1), 'kd--', alpha=0.8)
     ax[4].plot(np.average(total_heap_use_per_param, axis=1),
