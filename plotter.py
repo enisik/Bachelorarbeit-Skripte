@@ -170,11 +170,12 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
     ],
         width_ratios=[5, 1],
         figsize=(15, 9),
-        num=fig_num
+        num=fig_num,
+        sharex=True
         )
     fig.suptitle(title, fontsize=16)
 
-    for i in ax:
+    for i in range(3):
         a = ax[i]
         a.grid()
         a.tick_params(labelbottom=True)
@@ -314,7 +315,7 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[int], fig
         avg_max_heap_use_per_param.append(np.average(max_heap_use))
         total_major_gc_time_per_param.append(total_major_gc_time)
         runtime_per_param.append(runtimes)
-    
+
     plt.close(fig_num)
     fig, ax = plt.subplot_mosaic([
         [0],
@@ -349,9 +350,22 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[int], fig
     ax[2].axes.set_ylabel("runtime (time of last event since start)")
     ax[2].yaxis.set_major_formatter(EngFormatter("s"))
 
+    colors = plt.cm.tab20b(np.linspace(0, 1, len(total_heap_use_per_param)))
     for i in range(len(total_heap_use_per_param)):
-        ax[3].scatter(total_heap_use_per_param[i], total_major_gc_time_per_param[i])
-        ax[4].scatter(total_heap_use_per_param[i], runtime_per_param[i])
+        ax[3].scatter(total_heap_use_per_param[i], total_major_gc_time_per_param[i],
+                      color=colors[i], alpha=0.5)
+        ax[3].plot(np.average(total_heap_use_per_param[i]), np.average(total_major_gc_time_per_param[i]),
+                      color=colors[i], marker='d')
+        ax[4].scatter(total_heap_use_per_param[i],
+                      runtime_per_param[i], color=colors[i], alpha=0.5)
+        ax[4].plot(np.average(total_heap_use_per_param[i]),
+                   np.average(runtime_per_param[i]), color=colors[i], marker='d')
+    print(len(total_heap_use_per_param), len(
+        np.average(total_heap_use_per_param, axis=1)))
+    ax[3].plot(np.average(total_heap_use_per_param, axis=1),
+               np.average(total_major_gc_time_per_param, axis=1), 'kd--', alpha=0.8)
+    ax[4].plot(np.average(total_heap_use_per_param, axis=1),
+               np.average(runtime_per_param, axis=1), 'kd--', alpha=0.8)
     
     ax[3].yaxis.set_major_formatter(EngFormatter("s"))
     ax[3].xaxis.set_major_formatter(EngFormatter("B"))
