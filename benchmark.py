@@ -6,11 +6,11 @@ from tqdm import tqdm
 import os
 import sys
 
-# PYPYLOG=gc:logs/bench-i ./pypy-c ~/Desktop/pypy/rpython/translator/goal/gcbench.py
 
-def set_argparser():
+def get_argparser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--it', type=int, default=10, help='Number of iterations', dest="iterations")
+    parser.add_argument('--it', type=int, default=10,
+                        help='Number of iterations', dest="iterations")
     parser.add_argument('--c', type=str, required=True,
                         help='compiler/interpreter', dest="compiler_path")
     parser.add_argument('--t', type=str, required=True,
@@ -21,12 +21,26 @@ def set_argparser():
                         help='destination', dest="dest_path")
     parser.add_argument('--no_mem_balancer', action=argparse.BooleanOptionalAction,
                         dest="no_mem_bal")
-                        
+
     return parser
 
 
+def get_tuning_factors(arguments):
+    if arguments.no_mem_bal:
+        env_tunings = [{"PYPY_GC_MAJOR_COLLECT": str(tuning_factor)} for tuning_factor in 
+                       [1.4, 1.8, 2.4, 3, 3.7, 4.4, 5.2, 6]]
+        key = "PYPY_GC_MAJOR_COLLECT"
+        gc_name = "MiniMark"
+    else:
+        env_tunings = [{"PYPY_GC_MEMBALANCER_TUNING": str(tuning_factor)} for 
+                       tuning_factor in 10 ** np.linspace(2, 5, 20)]
+        key = "PYPY_GC_MEMBALANCER_TUNING"
+        gc_name = "MemBalancer"
+    return env_tunings, key, gc_name
+
+
 if __name__ == "__main__":
-    parser = set_argparser()
+    parser = get_argparser()
     arguments = parser.parse_args()
     now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     os_env = dict(os.environ)
@@ -34,16 +48,7 @@ if __name__ == "__main__":
     compiler_path = os.path.expanduser(arguments.compiler_path)
     dest_path_root = os.path.expanduser(arguments.dest_path)
     args = ["time", compiler_path, file_path]
-    if arguments.no_mem_bal:
-        env_tunings = [{"PYPY_GC_MAJOR_COLLECT": str(
-            tuning_factor)} for tuning_factor in [1.4, 1.8, 2.4, 3, 3.7, 4.4, 5.2, 6]]
-        key = "PYPY_GC_MAJOR_COLLECT"
-        gc_name = "MiniMark"
-    else:
-        env_tunings = [{"PYPY_GC_MEMBALANCER_TUNING": str(
-            tuning_factor)} for tuning_factor in 10 ** np.linspace(2, 5, 20)]
-        key = "PYPY_GC_MEMBALANCER_TUNING"
-        gc_name = "MemBalancer"
+    env_tunings, key, gc_name = get_tuning_factors(arguments)
     if arguments.opt_source is not None:
         args.append("--source")
         args.append(arguments.opt_source)
@@ -59,4 +64,3 @@ if __name__ == "__main__":
             with open(f"{dest_path}/{i}", 'a') as f:
                 for substr in result.stderr.decode().split(' '):
                     print(substr, file=f)
-
