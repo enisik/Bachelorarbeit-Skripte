@@ -98,7 +98,7 @@ class LogData:
         self.time_threshold.append(self.time_memory[-1])
         self.threshold.append(self.threshold[-1])
 
-def get_events_from(path : str):
+def get_events_from(path : str) -> list[dict]:
     # 
     # https://stackoverflow.com/questions/30627810/how-to-parse-this-custom-log-file-in-python
     #
@@ -204,6 +204,20 @@ def get_events_from(path : str):
             elif "membalancer compute_threshold" in line:
                 splitted_line = line.split(":")
                 currentDict["membalancer-compute_threshold"] = float(splitted_line[1])
+
+            elif "user" in line:
+                splitted_line = line.split("u")
+                currentDict = {"user-time": splitted_line[0], "text": ""}
+
+            elif "system" in line:
+                splitted_line = line.split("s")
+                currentDict["system-time"] = splitted_line[0]
+
+            elif "elapsed" in line:
+                splitted_line = line.split("e")
+                currentDict["elapsed-time"] = splitted_line[0]
+                print(currentDict)
+                yield currentDict
 
             else:
                 currentDict["text"] += line
