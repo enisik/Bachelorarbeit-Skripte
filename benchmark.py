@@ -15,12 +15,18 @@ def get_argparser():
                         help='compiler/interpreter', dest="compiler_path")
     parser.add_argument('--t', type=str, required=True,
                         help='script to run', dest="file_path")
-    parser.add_argument('--source', type=str, required=False,
-                        help='source argument for gctranslate', dest="opt_source")
     parser.add_argument('--dest', type=str, required=True,
                         help='destination', dest="dest_path")
+    parser.add_argument('--source', type=str, required=False,
+                        help='source argument for gctranslate', dest="opt_source")
+    parser.add_argument('--benchmark', type=str, required=False,
+                        dest="opt_benchamrk")
+    parser.add_argument('--n', type=str, required=False,
+                        dest="opt_n")
     parser.add_argument('--no_mem_balancer', action=argparse.BooleanOptionalAction,
                         dest="no_mem_bal")
+    parser.add_argument('--time', action=argparse.BooleanOptionalAction,
+                        dest="time")
 
     return parser
 
@@ -39,6 +45,22 @@ def get_tuning_factors(arguments):
     return env_tunings, key, gc_name
 
 
+def get_args(arguments, file_path, compiler_path):
+    if arguments.time:
+        args = ["time", compiler_path, file_path]
+    else:
+        args = [compiler_path, file_path]
+    if arguments.opt_source is not None:
+        args.append("--source")
+        args.append(arguments.opt_source)
+    if arguments.opt_benchmark is not None:
+        args.append("--benchmark")
+        args.append(arguments.opt_benchmark)
+    if arguments.opt_n is not None:
+        args.append("-n")
+        args.append(arguments.opt_n)
+    return args
+
 if __name__ == "__main__":
     parser = get_argparser()
     arguments = parser.parse_args()
@@ -47,11 +69,8 @@ if __name__ == "__main__":
     file_path = os.path.expanduser(arguments.file_path)
     compiler_path = os.path.expanduser(arguments.compiler_path)
     dest_path_root = os.path.expanduser(arguments.dest_path)
-    args = ["time", compiler_path, file_path]
     env_tunings, key, gc_name = get_tuning_factors(arguments)
-    if arguments.opt_source is not None:
-        args.append("--source")
-        args.append(arguments.opt_source)
+    args = get_args(arguments, file_path, compiler_path)
     for env_tuning in env_tunings:
         print(
             f"===============\t\t {key}:{env_tuning[key]:<20} \t\t===============")
