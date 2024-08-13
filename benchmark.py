@@ -80,6 +80,6 @@ if __name__ == "__main__":
         for i in tqdm(range(arguments.iterations), ncols=100):
             env["PYPYLOG"] = f"gc:{dest_path}/{i}"
             result = subprocess.run(args, env=env, capture_output=True)
-            with open(f"{dest_path}/{i}", 'a') as f:
-                for substr in result.stderr.decode().split(' '):
-                    print(substr, file=f)
+            #with open(f"{dest_path}/{i}", 'a') as f:
+            #    for substr in result.stderr.decode().split(' '):
+            #        print(substr, file=f)
