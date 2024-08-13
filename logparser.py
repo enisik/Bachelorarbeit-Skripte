@@ -5,7 +5,7 @@ import pandas as pd
 
 class LogData:
 
-    def __init__(self, path, mem_balancer=True):
+    def __init__(self, path: str, mem_balancer: bool=True):
         self.time_memory, self.memory = [], []
         self.time_threshold, self.threshold = [], []
         self.membalancer_compute_threshold, self.membalancer_limit = [], []
@@ -16,6 +16,10 @@ class LogData:
         self.time_on_gc = []
         self.s_m_list, self.s_m_smoothed_list, self.s_t_list, self.s_t_smoothed_list = [], [], [], []
         events = get_events_from(path)
+        if "user-time" in events[-1].keys():
+            self.user_time = events[-1]["user-time"]
+            self.system_time = events[-1]["system-time"]
+            self.elapsed_time = events[-1]["elapsed-time"]
         self.gc_events = [event for event in events if event["task"]
                      == "gc-minor" or "gc-collect" in event["task"]]
         self.minor_gcs = 0
@@ -98,7 +102,9 @@ class LogData:
         self.time_threshold.append(self.time_memory[-1])
         self.threshold.append(self.threshold[-1])
 
-def get_events_from(path : str) -> list[dict]:
+type Benchmark = list[list[LogData]]
+
+def get_events_from(path: str) -> list[dict]:
     # 
     # https://stackoverflow.com/questions/30627810/how-to-parse-this-custom-log-file-in-python
     #
@@ -226,14 +232,27 @@ def get_events_from(path : str) -> list[dict]:
         events = list(generateDicts(f))
     return events
 
-
-def get_log_data_from_folder(folder : str, mem_balancer : bool = True) -> list[LogData]:
+def get_log_data_from_folder(folder: str, mem_balancer: bool=True) -> list[LogData]:
     only_files = [path for file in listdir(folder) if isfile(path := join(folder, file))]
     data_from_logs = [LogData(path, mem_balancer) for path in only_files]
     return data_from_logs
 
 
-def get_stats_from_log_data(benchmark: list[list[LogData]], tuning_factors: list[int]):
+def get_tuning_factor(path: str) -> float:
+    return float(path.split('/')[-1])
+
+
+def get_benchmark(source: str, mem_balancer: bool=True) -> tuple[Benchmark, list[float]]:
+    benchmark = []
+    only_folder = [path for file in listdir(
+        source) if not isfile(path := join(source, file))]
+    only_folder.sort(key=get_tuning_factor)
+    for folder in only_folder:
+        benchmark.append(get_log_data_from_folder(folder, mem_balancer))
+    tuning_factors = [round(get_tuning_factor(path)) for path in only_folder]
+    return benchmark, tuning_factors
+
+def get_stats_from_log_data(benchmark: Benchmark, tuning_factors: list[int]):
     total_major_gc_time_per_param = []
     avg_max_heap_use_per_param = []
     total_heap_use_per_param = []
