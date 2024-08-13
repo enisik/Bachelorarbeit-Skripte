@@ -74,7 +74,7 @@ if __name__ == "__main__":
     for env_tuning in env_tunings:
         print(
             f"===============\t\t {key}:{env_tuning[key]:<20} \t\t===============")
-        dest_path = f"{dest_path_root}/{now}/{gc_name}/{env_tuning[key]}"
+        dest_path = f"{dest_path_root}/{gc_name}/{now}/{env_tuning[key]}"
         os.makedirs(dest_path)
         env = os_env | env_tuning
         for i in tqdm(range(arguments.iterations), ncols=100):
