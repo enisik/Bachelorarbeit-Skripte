@@ -20,7 +20,7 @@ def get_argparser():
     parser.add_argument('--source', type=str, required=False,
                         help='source argument for gctranslate', dest="opt_source")
     parser.add_argument('--benchmark', type=str, required=False,
-                        dest="opt_benchamrk")
+                        dest="opt_benchmark")
     parser.add_argument('--n', type=str, required=False,
                         dest="opt_n")
     parser.add_argument('--no_mem_balancer', action=argparse.BooleanOptionalAction,
