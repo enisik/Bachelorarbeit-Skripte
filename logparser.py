@@ -211,18 +211,13 @@ def get_events_from(path: str) -> list[dict]:
                 splitted_line = line.split(":")
                 currentDict["membalancer-compute_threshold"] = float(splitted_line[1])
 
-            elif "user" in line:
-                splitted_line = line.split("u")
-                currentDict = {"user-time": splitted_line[0], "text": ""}
+            elif "User time" in line:
+                splitted_line = line.split(":")
+                currentDict = {"user-time": splitted_line[-1], "text": ""}
 
-            elif "system" in line:
-                splitted_line = line.split("s")
-                currentDict["system-time"] = splitted_line[0]
-
-            elif "elapsed" in line:
-                splitted_line = line.split("e")
-                currentDict["elapsed-time"] = splitted_line[0]
-                print(currentDict)
+            elif "Maximum resident set" in line:
+                splitted_line = line.split(":")
+                currentDict["elapsed-time"] = splitted_line[-1]
                 yield currentDict
 
             else:
