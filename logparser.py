@@ -212,11 +212,11 @@ def get_events_from(path: str) -> list[dict]:
 
             elif "User time" in line:
                 splitted_line = line.split(":")
-                currentDict = {"user-time": splitted_line[-1], "text": ""}
+                currentDict = {"user-time": float(splitted_line[-1]), "text": "", "task": ""}
 
             elif "Maximum resident set" in line:
                 splitted_line = line.split(":")
-                currentDict["rss"] = splitted_line[-1]
+                currentDict["rss"] = float(splitted_line[-1])
                 yield currentDict
 
             else:
