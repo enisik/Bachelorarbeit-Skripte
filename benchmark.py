@@ -76,7 +76,7 @@ if __name__ == "__main__":
             env["PYPYLOG"] = f"gc:{dest_path}/{i}"
             result = subprocess.run(args, env=env, capture_output=True)
             with open(f"{dest_path}/{i}", 'a') as f:
-                for substr in result.stderr.decode().split(' '):
+                for substr in result.stderr.decode().split('\n'):
                     if "User time" in substr:
                         print(substr, file=f)
                     elif "Maximum resident set size" in substr:
