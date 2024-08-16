@@ -217,7 +217,7 @@ def get_events_from(path: str) -> list[dict]:
 
             elif "Maximum resident set" in line:
                 splitted_line = line.split(":")
-                currentDict["elapsed-time"] = splitted_line[-1]
+                currentDict["rss"] = splitted_line[-1]
                 yield currentDict
 
             else:
