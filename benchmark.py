@@ -25,8 +25,6 @@ def get_argparser():
                         dest="opt_n")
     parser.add_argument('--no_mem_balancer', action=argparse.BooleanOptionalAction,
                         dest="no_mem_bal")
-    parser.add_argument('--time', action=argparse.BooleanOptionalAction,
-                        dest="time")
 
     return parser
 
@@ -46,10 +44,7 @@ def get_tuning_factors(arguments):
 
 
 def get_args(arguments, file_path, compiler_path):
-    if arguments.time:
-        args = ["time", compiler_path, file_path]
-    else:
-        args = [compiler_path, file_path]
+    args = ["time", "--verbose", compiler_path, file_path]
     if arguments.opt_source is not None:
         args.append("--source")
         args.append(arguments.opt_source)
@@ -80,6 +75,9 @@ if __name__ == "__main__":
         for i in tqdm(range(arguments.iterations), ncols=100):
             env["PYPYLOG"] = f"gc:{dest_path}/{i}"
             result = subprocess.run(args, env=env, capture_output=True)
-            #with open(f"{dest_path}/{i}", 'a') as f:
-            #    for substr in result.stderr.decode().split(' '):
-            #        print(substr, file=f)
+            with open(f"{dest_path}/{i}", 'a') as f:
+                for substr in result.stderr.decode().split(' '):
+                    if "User time" in substr:
+                        print(substr, file=f)
+                    elif "Maximum resident set size" in substr:
+                        print(substr, file=f)
