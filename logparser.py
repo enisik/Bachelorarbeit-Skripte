@@ -19,7 +19,7 @@ class LogData:
         events = get_events_from(path)
         if "user-time" in events[-1].keys():
             self.user_time = events[-1]["user-time"]
-            self.max_rss = events[-1]["rss"]
+            self.max_rss = events[-1]["rss"] * 1024
         self.gc_events = [event for event in events if event["task"]
                      == "gc-minor" or "gc-collect" in event["task"]]
         self.minor_gcs = 0
