@@ -11,6 +11,7 @@ class LogData:
         self.membalancer_compute_threshold, self.membalancer_limit = [], []
         self.time_gc_collect_start, self.time_gc_collect_end = [], []
         self.time_major_gc_start, self.time_major_gc_end = [], []
+        self.total_minor_gc_time = 0
         self.time_heartbeat = []
         self.g_m_list, self.g_m_smoothed_list, self.g_t_list, self.g_t_smoothed_list = [], [], [], []
         self.time_on_gc = []
@@ -30,6 +31,7 @@ class LogData:
                     self.minor_gcs += 1
                     self.time_memory.append(event["time-start"])
                     self.memory.append(event["memory-before-collect"])
+                    self.total_minor_gc_time += event["time-taken"]
                     self.time_memory.append(self.time_memory[-1] + event["time-taken"])
                     self.memory.append(event["memory-after-collect"])
                     self.time_heartbeat.append((self.time_memory[-2] + self.time_memory[-1])/2)
@@ -75,6 +77,7 @@ class LogData:
                     self.memory.append(event["memory-before-collect"])
                     self.time_memory.append(
                         self.time_memory[-1] + event["time-taken"])
+                    self.total_minor_gc_time += event["time-taken"]
                     self.memory.append(event["memory-after-collect"])
                     if "new-threshold" in event:
                         self.time_threshold.append(self.time_memory[-1])
@@ -243,10 +246,10 @@ def get_benchmark(source: str, mem_balancer: bool=True) -> tuple[Benchmark, list
     only_folder.sort(key=get_tuning_factor)
     for folder in only_folder:
         benchmark.append(get_log_data_from_folder(folder, mem_balancer))
-    tuning_factors = [round(get_tuning_factor(path)) for path in only_folder]
+    tuning_factors = [round(get_tuning_factor(path),1) for path in only_folder]
     return benchmark, tuning_factors
 
-def get_stats_from_log_data(benchmark: Benchmark, tuning_factors: list[int]):
+def get_stats_from_log_data(benchmark: Benchmark, tuning_factors: list[float]):
     total_major_gc_time_per_param = []
     avg_max_heap_use_per_param = []
     total_heap_use_per_param = []
