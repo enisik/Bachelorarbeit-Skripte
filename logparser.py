@@ -246,7 +246,7 @@ def get_benchmark(source: str, mem_balancer: bool=True) -> tuple[Benchmark, list
     only_folder.sort(key=get_tuning_factor)
     for folder in only_folder:
         benchmark.append(get_log_data_from_folder(folder, mem_balancer))
-    tuning_factors = [round(get_tuning_factor(path),1) for path in only_folder]
+    tuning_factors = [round(get_tuning_factor(path),2) for path in only_folder]
     return benchmark, tuning_factors
 
 def get_stats_from_log_data(benchmark: Benchmark, tuning_factors: list[float]):
