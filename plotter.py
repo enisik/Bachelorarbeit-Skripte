@@ -337,67 +337,81 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[float], f
     plt.close(fig_num)
     if has_time_info:
         subplots = [
-            ['major_gc-tuning'], ['minor_gc-tuning'], ['num_major_gc-tuning'],
-            ['num_minor_gc-tuning'], ['total_heap-tuning'], ['runtime-tuning'],
-            ['wallclock-tuning'], ['rss-tuning'], ['major_gc-total_heap'], ['runtime-total_heap']
+            ['major_gc-tuning', 'num_major_gc-tuning'], 
+            ['minor_gc-tuning', 'num_minor_gc-tuning'],
+            ['total_heap-tuning', 'rss-tuning'], 
+            ['runtime-tuning', 'wallclock-tuning'],
+            ['major_gc-total_heap', 'major_gc-total_heap'],
+            ['runtime-total_heap', 'runtime-total_heap']
         ]
     else:
         subplots = [
-            ['major_gc-tuning'], ['minor_gc-tuning'], ['num_major_gc-tuning'],
-            ['num_minor_gc-tuning'], ['total_heap-tuning'], ['runtime-tuning'],
-            ['major_gc-total_heap'], ['runtime-total_heap']
+            ['major_gc-tuning', 'num_major_gc-tuning'],
+            ['minor_gc-tuning', 'num_minor_gc-tuning'], 
+            ['total_heap-tuning', 'total_heap-tuning'],
+            ['runtime-tuning', 'runtime-tuning'],
+            ['major_gc-total_heap', 'major_gc-total_heap'],
+            ['runtime-total_heap', 'runtime-total_heap']
         ]
-    fig, ax = plt.subplot_mosaic(subplots, figsize=(15, 20), num=fig_num)
+    fig, ax = plt.subplot_mosaic(subplots, figsize=(15, 15), num=fig_num)
     fig.suptitle(title, fontsize=16, y=0.993)
 
     for i in ax:
         ax[i].grid()
 
     ax['major_gc-tuning'].boxplot(total_major_gc_time_per_param, showfliers=True)
-    ax['major_gc-tuning'].set_xticklabels(tuning_factors)
+    ax['major_gc-tuning'].set_xticklabels(tuning_factors,
+                                          rotation=30, ha='right')
     ax['major_gc-tuning'].axes.set_ylabel("total major gc time")
     ax['major_gc-tuning'].axes.set_xlabel("tuning factor (rounded)")
     ax['major_gc-tuning'].yaxis.set_major_formatter(EngFormatter("s"))
 
     ax['minor_gc-tuning'].boxplot(total_minor_gc_time_per_param,
                                   showfliers=True)
-    ax['minor_gc-tuning'].set_xticklabels(tuning_factors)
+    ax['minor_gc-tuning'].set_xticklabels(tuning_factors,
+                                          rotation=30, ha='right')
     ax['minor_gc-tuning'].axes.set_ylabel("total minor gc time")
     ax['minor_gc-tuning'].axes.set_xlabel("tuning factor (rounded)")
     ax['minor_gc-tuning'].yaxis.set_major_formatter(EngFormatter("s"))
 
     ax['num_major_gc-tuning'].boxplot(num_major_gc_per_param, showfliers=True)
-    ax['num_major_gc-tuning'].set_xticklabels(tuning_factors)
+    ax['num_major_gc-tuning'].set_xticklabels(
+        tuning_factors, rotation=30, ha='right')
     ax['num_major_gc-tuning'].axes.set_ylabel("number of major gcs")
     ax['num_major_gc-tuning'].axes.set_xlabel("tuning factor (rounded)")
 
     ax['num_minor_gc-tuning'].boxplot(num_minor_gc_per_param, showfliers=True)
-    ax['num_minor_gc-tuning'].set_xticklabels(tuning_factors)
+    ax['num_minor_gc-tuning'].set_xticklabels(
+        tuning_factors, rotation=30, ha='right')
     ax['num_minor_gc-tuning'].axes.set_ylabel("number of minor gcs")
     ax['num_minor_gc-tuning'].axes.set_xlabel("tuning factor (rounded)")
 
     ax['total_heap-tuning'].boxplot(total_heap_use_per_param, showfliers=True)
-    ax['total_heap-tuning'].set_xticklabels(tuning_factors)
+    ax['total_heap-tuning'].set_xticklabels(
+        tuning_factors, rotation=15, ha='right')
     ax['total_heap-tuning'].axes.set_xlabel("tuning factor (rounded)")
     ax['total_heap-tuning'].axes.set_ylabel("total heap usage") # (max value from minor debug info)
     ax['total_heap-tuning'].yaxis.set_major_formatter(EngFormatter("B"))
 
     ax['runtime-tuning'].boxplot(runtime_per_param, showfliers=True)
-    ax['runtime-tuning'].set_xticklabels(tuning_factors)
+    ax['runtime-tuning'].set_xticklabels(tuning_factors,
+                                         rotation=15, ha='right')
     ax['runtime-tuning'].axes.set_xlabel("tuning factor (rounded)")
     ax['runtime-tuning'].axes.set_ylabel("runtime") # (time of last event since start)
     ax['runtime-tuning'].yaxis.set_major_formatter(EngFormatter("s"))
 
     if has_time_info:
         ax['wallclock-tuning'].boxplot(wallclock_time_per_param, showfliers=True)
-        ax['wallclock-tuning'].set_xticklabels(tuning_factors)
+        ax['wallclock-tuning'].set_xticklabels(
+            tuning_factors, rotation=15, ha='right')
         ax['wallclock-tuning'].axes.set_xlabel("tuning factor (rounded)")
         ax['wallclock-tuning'].axes.set_ylabel(
             "wall clock time")
         ax['wallclock-tuning'].yaxis.set_major_formatter(EngFormatter("s"))
 
         ax['rss-tuning'].boxplot(max_rss_per_param, showfliers=True)
-        ax['rss-tuning'].set_xticklabels(tuning_factors)
+        ax['rss-tuning'].set_xticklabels(tuning_factors,
+                                         rotation=15, ha='right')
         ax['rss-tuning'].axes.set_xlabel("tuning factor (rounded)")
         ax['rss-tuning'].axes.set_ylabel(
             "max rss")
@@ -429,6 +443,107 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[float], f
     ax['runtime-total_heap'].xaxis.set_major_formatter(EngFormatter("B"))
     ax['runtime-total_heap'].axes.set_ylabel("runtime") # (time of last event since start)
     ax['runtime-total_heap'].axes.set_xlabel("total heap usage") # (max value of iteration)
+
+    fig.canvas.header_visible = False
+    fig.tight_layout()
+    fig.set_facecolor('slategrey')
+
+
+def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label = "bench2", title="benchmark data"):
+    total_major_gc_time_per_param_1, total_heap_use_per_param_1, runtime_per_param_1 = [], [], []
+    total_major_gc_time_per_param_2, total_heap_use_per_param_2, runtime_per_param_2 = [], [], []
+
+    for bench in bench1:
+        total_major_gc_time = []
+        max_heap_use = []
+        runtimes = []
+        for prog_run in bench:
+            major_gc_time = 0
+            for i in range(len(prog_run.time_major_gc_start)):
+                major_gc_time += prog_run.time_gc_collect_end[i] - \
+                    prog_run.time_gc_collect_start[i]
+            total_major_gc_time.append(major_gc_time)
+            max_heap_use.append(max(prog_run.memory))
+            runtimes.append(prog_run.gc_events[-1]["time-start"])
+
+        total_heap_use_per_param_1.append(max_heap_use)
+        total_major_gc_time_per_param_1.append(total_major_gc_time)
+        runtime_per_param_1.append(runtimes)
+    
+    for bench in bench2:
+        total_major_gc_time = []
+        max_heap_use = []
+        runtimes = []
+        for prog_run in bench:
+            major_gc_time = 0
+            for i in range(len(prog_run.time_major_gc_start)):
+                major_gc_time += prog_run.time_gc_collect_end[i] - \
+                    prog_run.time_gc_collect_start[i]
+            total_major_gc_time.append(major_gc_time)
+            max_heap_use.append(max(prog_run.memory))
+            runtimes.append(prog_run.gc_events[-1]["time-start"])
+
+        total_heap_use_per_param_2.append(max_heap_use)
+        total_major_gc_time_per_param_2.append(total_major_gc_time)
+        runtime_per_param_2.append(runtimes)
+
+
+    plt.close(fig_num)
+    subplots = [
+        ['major_gc-total_heap'],
+        ['runtime-total_heap']
+        ]
+    
+    fig, ax = plt.subplot_mosaic(subplots, figsize=(15, 8), num=fig_num)
+    fig.suptitle(title, fontsize=16, y=0.993)
+
+    for i in ax:
+        ax[i].grid()
+
+    for i in range(len(total_heap_use_per_param_1)):
+        ax['major_gc-total_heap'].scatter(total_heap_use_per_param_1[i], total_major_gc_time_per_param_1[i],
+                                          color='k', alpha=0.8, s=10)
+        #ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_1[i]), np.average(total_major_gc_time_per_param_1[i]),
+        #                               color='k', marker='d', ms=6)
+        ax['runtime-total_heap'].scatter(total_heap_use_per_param_1[i],
+                                         runtime_per_param_1[i], color='k', alpha=0.8, s=10)
+        #ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_1[i]),
+        #                              np.average(runtime_per_param_1[i]), color='k', marker='d', ms=6)
+    ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_1, axis=1),
+                                   np.average(total_major_gc_time_per_param_1, axis=1), 'kd--', alpha=0.6, ms=4, label=bench1_label)
+    ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_1, axis=1),
+                                  np.average(runtime_per_param_1, axis=1), 'kd--', alpha=0.6, ms=4, label=bench1_label)
+    
+    for i in range(len(total_heap_use_per_param_2)):
+        ax['major_gc-total_heap'].scatter(total_heap_use_per_param_2[i], total_major_gc_time_per_param_2[i],
+                                          color='b', alpha=0.8, s=10)
+        #ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_2[i]), np.average(total_major_gc_time_per_param_2[i]),
+        #                               color='b', marker='d', ms=6)
+        ax['runtime-total_heap'].scatter(total_heap_use_per_param_2[i],
+                                         runtime_per_param_2[i], color='b', alpha=0.8, s=10)
+        #ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_2[i]),
+        #                              np.average(runtime_per_param_2[i]), color='b', marker='d', ms=6)
+    ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_2, axis=1),
+                                   np.average(total_major_gc_time_per_param_2, axis=1), 'bd--', alpha=0.6, ms=4, label=bench2_label)
+    ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_2, axis=1),
+                                  np.average(runtime_per_param_2, axis=1), 'bd--', alpha=0.6, ms=4, label=bench2_label)
+
+    ax['major_gc-total_heap'].yaxis.set_major_formatter(EngFormatter("s"))
+    ax['major_gc-total_heap'].xaxis.set_major_formatter(EngFormatter("B"))
+    ax['major_gc-total_heap'].axes.set_ylabel("total major gc collection time")
+    # (max value of iteration)
+    ax['major_gc-total_heap'].axes.set_xlabel("total heap usage")
+    ax['major_gc-total_heap'].legend()
+    # plt.ylim(bottom=0)
+    # plt.xlim(left=0)
+
+    ax['runtime-total_heap'].yaxis.set_major_formatter(EngFormatter("s"))
+    ax['runtime-total_heap'].xaxis.set_major_formatter(EngFormatter("B"))
+    # (time of last event since start)
+    ax['runtime-total_heap'].axes.set_ylabel("runtime")
+    # (max value of iteration)
+    ax['runtime-total_heap'].axes.set_xlabel("total heap usage")
+    ax['runtime-total_heap'].legend()
 
     fig.canvas.header_visible = False
     fig.tight_layout()
