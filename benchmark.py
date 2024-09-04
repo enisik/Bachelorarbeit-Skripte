@@ -32,7 +32,7 @@ def get_argparser():
 def get_tuning_factors(arguments):
     if arguments.no_mem_bal:
         env_tunings = [{"PYPY_GC_MAJOR_COLLECT": str(tuning_factor)} for tuning_factor in 
-                       [1.4, 1.8, 2, 2.4, 2.7, 3, 3.4, 3.7, 4, 4.4, 4.7, 5, 5.4, 5.7, 6]]
+                       [1.1, 1.2, 1.4, 1.8, 2, 2.4, 2.7, 3, 3.4, 3.7, 4, 4.5, 5, 5.5, 6]]
         key = "PYPY_GC_MAJOR_COLLECT"
         gc_name = "MiniMark"
     else:
