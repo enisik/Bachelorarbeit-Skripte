@@ -388,14 +388,14 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[float], f
 
     ax['total_heap-tuning'].boxplot(total_heap_use_per_param, showfliers=True)
     ax['total_heap-tuning'].set_xticklabels(
-        tuning_factors, rotation=15, ha='right')
+        tuning_factors, rotation=30, ha='right')
     ax['total_heap-tuning'].axes.set_xlabel("tuning factor (rounded)")
     ax['total_heap-tuning'].axes.set_ylabel("total heap usage") # (max value from minor debug info)
     ax['total_heap-tuning'].yaxis.set_major_formatter(EngFormatter("B"))
 
     ax['runtime-tuning'].boxplot(runtime_per_param, showfliers=True)
     ax['runtime-tuning'].set_xticklabels(tuning_factors,
-                                         rotation=15, ha='right')
+                                         rotation=30, ha='right')
     ax['runtime-tuning'].axes.set_xlabel("tuning factor (rounded)")
     ax['runtime-tuning'].axes.set_ylabel("runtime") # (time of last event since start)
     ax['runtime-tuning'].yaxis.set_major_formatter(EngFormatter("s"))
@@ -403,7 +403,7 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[float], f
     if has_time_info:
         ax['wallclock-tuning'].boxplot(wallclock_time_per_param, showfliers=True)
         ax['wallclock-tuning'].set_xticklabels(
-            tuning_factors, rotation=15, ha='right')
+            tuning_factors, rotation=30, ha='right')
         ax['wallclock-tuning'].axes.set_xlabel("tuning factor (rounded)")
         ax['wallclock-tuning'].axes.set_ylabel(
             "wall clock time")
@@ -411,7 +411,7 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[float], f
 
         ax['rss-tuning'].boxplot(max_rss_per_param, showfliers=True)
         ax['rss-tuning'].set_xticklabels(tuning_factors,
-                                         rotation=15, ha='right')
+                                         rotation=30, ha='right')
         ax['rss-tuning'].axes.set_xlabel("tuning factor (rounded)")
         ax['rss-tuning'].axes.set_ylabel(
             "max rss")
@@ -463,7 +463,7 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
                 major_gc_time += prog_run.time_gc_collect_end[i] - \
                     prog_run.time_gc_collect_start[i]
             total_major_gc_time.append(major_gc_time)
-            max_heap_use.append(max(prog_run.memory))
+            max_heap_use.append(sum(prog_run.memory)/len(prog_run.memory))
             runtimes.append(prog_run.gc_events[-1]["time-start"])
 
         total_heap_use_per_param_1.append(max_heap_use)
@@ -480,7 +480,7 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
                 major_gc_time += prog_run.time_gc_collect_end[i] - \
                     prog_run.time_gc_collect_start[i]
             total_major_gc_time.append(major_gc_time)
-            max_heap_use.append(max(prog_run.memory))
+            max_heap_use.append(sum(prog_run.memory)/len(prog_run.memory))
             runtimes.append(prog_run.gc_events[-1]["time-start"])
 
         total_heap_use_per_param_2.append(max_heap_use)
