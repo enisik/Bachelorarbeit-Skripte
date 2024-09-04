@@ -33,7 +33,7 @@ class LogData:
                     self.memory.append(event["memory-before-collect"])
                     self.total_minor_gc_time += event["time-taken"]
                     self.time_memory.append(self.time_memory[-1] + event["time-taken"])
-                    self.memory.append(event["memory-after-collect"])
+                    #self.memory.append(event["memory-after-collect"])
                     self.time_heartbeat.append((self.time_memory[-2] + self.time_memory[-1])/2)
                     self.g_m_list.append(event["g_m"])
                     self.g_m_smoothed_list.append(event["g_m_smoothed"])
