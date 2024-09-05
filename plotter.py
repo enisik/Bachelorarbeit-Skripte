@@ -170,8 +170,7 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
     ],
         width_ratios=[5, 1],
         figsize=(15, 9),
-        num=fig_num,
-        sharex=True
+        num=fig_num
         )
     fig.suptitle(title, fontsize=16)
 
@@ -212,6 +211,7 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
     line, = ax[0].step(log_data.time_on_gc, s_m_smoothed_list, 'limegreen',
                where='post', label="$s_m^{*}$")
     ax0_lines_by_label[line.get_label()] = line
+    ax[1].sharex(ax[0])
     #ax[1].yaxis.set_major_formatter(EngFormatter("B"))
     #ax[1].xaxis.set_major_formatter(EngFormatter("s"))
     #ax[1].legend(loc='best', ncol=2, fancybox=True)
@@ -246,6 +246,7 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
     ax2_lines_by_label[line.get_label()] = line
     ax[2].yaxis.set_major_formatter(EngFormatter("B/s"))
     ax[2].xaxis.set_major_formatter(EngFormatter("s"))
+    ax[2].sharex(ax[0])
     #ax[2].legend(loc='best', ncol=2, fancybox=True)
 
     ax0_line_colors = [l.get_color() for l in ax0_lines_by_label.values()]
