@@ -421,17 +421,17 @@ def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[float], f
     colors = plt.cm.tab20b(np.linspace(0, 1, len(total_heap_use_per_param)))
     for i in range(len(total_heap_use_per_param)):
         ax['major_gc-total_heap'].scatter(total_heap_use_per_param[i], total_major_gc_time_per_param[i],
-                      color=colors[i], alpha=0.8, s=10)
+                      color=colors[i], alpha=0.4, s=20)
         ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param[i]), np.average(total_major_gc_time_per_param[i]),
-                      color=colors[i], marker='d', ms=6)
+                      color=colors[i], marker='d', ms=9)
         ax['runtime-total_heap'].scatter(total_heap_use_per_param[i],
-                                         runtime_per_param[i], color=colors[i], alpha=0.8, s=10)
+                                         runtime_per_param[i], color=colors[i], alpha=0.4, s=20)
         ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param[i]),
-                   np.average(runtime_per_param[i]), color=colors[i], marker='d', ms=6)
+                   np.average(runtime_per_param[i]), color=colors[i], marker='d', ms=9)
     ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param, axis=1),
-               np.average(total_major_gc_time_per_param, axis=1), 'kd--', alpha=0.6, ms=4)
+               np.average(total_major_gc_time_per_param, axis=1), 'kd--', alpha=0.4, ms=5)
     ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param, axis=1),
-               np.average(runtime_per_param, axis=1), 'kd--', alpha=0.6, ms=4)
+               np.average(runtime_per_param, axis=1), 'kd--', alpha=0.4, ms=5)
     
     ax['major_gc-total_heap'].yaxis.set_major_formatter(EngFormatter("s"))
     ax['major_gc-total_heap'].xaxis.set_major_formatter(EngFormatter("B"))
@@ -464,7 +464,7 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
                 major_gc_time += prog_run.time_gc_collect_end[i] - \
                     prog_run.time_gc_collect_start[i]
             total_major_gc_time.append(major_gc_time)
-            max_heap_use.append(sum(prog_run.memory)/len(prog_run.memory))
+            max_heap_use.append(np.average(prog_run.memory))
             runtimes.append(prog_run.gc_events[-1]["time-start"])
 
         total_heap_use_per_param_1.append(max_heap_use)
@@ -481,7 +481,7 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
                 major_gc_time += prog_run.time_gc_collect_end[i] - \
                     prog_run.time_gc_collect_start[i]
             total_major_gc_time.append(major_gc_time)
-            max_heap_use.append(sum(prog_run.memory)/len(prog_run.memory))
+            max_heap_use.append(np.average(prog_run.memory))
             runtimes.append(prog_run.gc_events[-1]["time-start"])
 
         total_heap_use_per_param_2.append(max_heap_use)
@@ -503,31 +503,31 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
 
     for i in range(len(total_heap_use_per_param_1)):
         ax['major_gc-total_heap'].scatter(total_heap_use_per_param_1[i], total_major_gc_time_per_param_1[i],
-                                          color='k', alpha=0.8, s=10)
+                                          color='k', alpha=0.3, s=25)
         #ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_1[i]), np.average(total_major_gc_time_per_param_1[i]),
         #                               color='k', marker='d', ms=6)
         ax['runtime-total_heap'].scatter(total_heap_use_per_param_1[i],
-                                         runtime_per_param_1[i], color='k', alpha=0.8, s=10)
+                                         runtime_per_param_1[i], color='k', alpha=0.3, s=25)
         #ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_1[i]),
         #                              np.average(runtime_per_param_1[i]), color='k', marker='d', ms=6)
     ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_1, axis=1),
-                                   np.average(total_major_gc_time_per_param_1, axis=1), 'kd--', alpha=0.6, ms=4, label=bench1_label)
+                                   np.average(total_major_gc_time_per_param_1, axis=1), 'kd--', alpha=0.7, ms=6, label=bench1_label)
     ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_1, axis=1),
-                                  np.average(runtime_per_param_1, axis=1), 'kd--', alpha=0.6, ms=4, label=bench1_label)
+                                  np.average(runtime_per_param_1, axis=1), 'kd--', alpha=0.7, ms=6, label=bench1_label)
     
     for i in range(len(total_heap_use_per_param_2)):
         ax['major_gc-total_heap'].scatter(total_heap_use_per_param_2[i], total_major_gc_time_per_param_2[i],
-                                          color='b', alpha=0.8, s=10)
+                                          color='b', alpha=0.3, s=25)
         #ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_2[i]), np.average(total_major_gc_time_per_param_2[i]),
         #                               color='b', marker='d', ms=6)
         ax['runtime-total_heap'].scatter(total_heap_use_per_param_2[i],
-                                         runtime_per_param_2[i], color='b', alpha=0.8, s=10)
+                                         runtime_per_param_2[i], color='b', alpha=0.3, s=25)
         #ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_2[i]),
         #                              np.average(runtime_per_param_2[i]), color='b', marker='d', ms=6)
     ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_2, axis=1),
-                                   np.average(total_major_gc_time_per_param_2, axis=1), 'bd--', alpha=0.6, ms=4, label=bench2_label)
+                                   np.average(total_major_gc_time_per_param_2, axis=1), 'bd--', alpha=0.7, ms=6, label=bench2_label)
     ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_2, axis=1),
-                                  np.average(runtime_per_param_2, axis=1), 'bd--', alpha=0.6, ms=4, label=bench2_label)
+                                  np.average(runtime_per_param_2, axis=1), 'bd--', alpha=0.7, ms=6, label=bench2_label)
 
     ax['major_gc-total_heap'].yaxis.set_major_formatter(EngFormatter("s"))
     ax['major_gc-total_heap'].xaxis.set_major_formatter(EngFormatter("B"))
