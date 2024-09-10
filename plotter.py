@@ -160,6 +160,9 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
     s_t_list = np.array(log_data.s_t_list)
     s_t_smoothed_list = np.array(log_data.s_t_smoothed_list)
 
+    time_memory = np.array(log_data.time_memory)
+    memory = np.array(log_data.memory)
+
     plt.close(fig_num)
     #fig, ax = plt.subplots(4, 1, sharex=True, num=fig_num, figsize=(13, 12))
     fig, ax = plt.subplot_mosaic([
@@ -189,13 +192,13 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
     ax1_lines_by_label = dict()
     ax2_lines_by_label = dict()
 
-    line, = ax[0].plot(log_data.time_memory, log_data.memory,
+    line, = ax[0].plot(time_memory[1::2], memory[1::2],
             'b-', label="heap usage")
     ax0_lines_by_label[line.get_label()] = line
     line, = ax[0].step(log_data.time_threshold, log_data.threshold,
            'r', where='post', label="threshold")
     ax0_lines_by_label[line.get_label()] = line
-    line, = ax[0].step(log_data.time_threshold[1:], log_data.membalancer_compute_threshold,
+    line, = ax[0].step(log_data.time_compute_threshold, log_data.membalancer_compute_threshold,
                'k', where='post', label="compute_threshold")
     ax0_lines_by_label[line.get_label()] = line
     ax[0].yaxis.set_major_formatter(EngFormatter("B"))

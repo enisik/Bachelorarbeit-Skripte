@@ -8,6 +8,7 @@ class LogData:
     def __init__(self, path: str, mem_balancer: bool=True):
         self.time_memory, self.memory = [], []
         self.time_threshold, self.threshold = [], []
+        self.time_compute_threshold = []
         self.membalancer_compute_threshold, self.membalancer_limit = [], []
         self.time_gc_collect_start, self.time_gc_collect_end = [], []
         self.time_major_gc_start, self.time_major_gc_end = [], []
@@ -33,15 +34,19 @@ class LogData:
                     self.memory.append(event["memory-before-collect"])
                     self.total_minor_gc_time += event["time-taken"]
                     self.time_memory.append(self.time_memory[-1] + event["time-taken"])
-                    #self.memory.append(event["memory-after-collect"])
+                    self.memory.append(event["memory-after-collect"])
                     self.time_heartbeat.append((self.time_memory[-2] + self.time_memory[-1])/2)
                     self.g_m_list.append(event["g_m"])
                     self.g_m_smoothed_list.append(event["g_m_smoothed"])
                     self.g_t_list.append(event["g_t"])
                     self.g_t_smoothed_list.append(event["g_t_smoothed"])
+                    self.time_threshold.append(self.time_memory[-2])
+                    self.threshold.append(event["current-threshold"])
                     if "new-threshold" in event:
                         self.time_threshold.append(self.time_memory[-1])
                         self.threshold.append(event["new-threshold"])
+                        self.time_compute_threshold.append(
+                            self.time_memory[-1])
                         self.membalancer_compute_threshold.append(
                             event["membalancer-compute_threshold"])
                 else:
@@ -53,6 +58,8 @@ class LogData:
                         time = self.time_gc_collect_end[-1]
                         self.time_threshold.append(time)
                         self.threshold.append(event["new-threshold"])
+
+                        self.time_compute_threshold.append(time)
                         self.membalancer_compute_threshold.append(
                             event["membalancer-compute_threshold"])
 
@@ -69,6 +76,8 @@ class LogData:
 
             self.membalancer_compute_threshold.append(
                 self.membalancer_compute_threshold[-1])
+            self.time_compute_threshold.append(
+                self.time_compute_threshold[-1])
         else:
             for event in self.gc_events:
                 if event["task"] == "gc-minor":
@@ -79,6 +88,8 @@ class LogData:
                         self.time_memory[-1] + event["time-taken"])
                     self.total_minor_gc_time += event["time-taken"]
                     self.memory.append(event["memory-after-collect"])
+                    self.time_threshold.append(self.time_memory[-2])
+                    self.threshold.append(event["current-threshold"])
                     if "new-threshold" in event:
                         self.time_threshold.append(self.time_memory[-1])
                         self.threshold.append(event["new-threshold"])
@@ -160,6 +171,10 @@ def get_events_from(path: str) -> list[dict]:
             elif "major collection threshold" in line:
                 splitted_line = line.split(":")
                 currentDict["new-threshold"] = float(splitted_line[1])
+            
+            elif "current threshold" in line:
+                splitted_line = line.split(":")
+                currentDict["current-threshold"] = float(splitted_line[1])
 
             elif "freed in this major collection" in line:
                 splitted_line = line.split(":")
