@@ -171,22 +171,22 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
         [2, 'leg2']
         #[3, 'leg']
     ],
-        width_ratios=[5, 1],
-        figsize=(15, 9),
+        width_ratios=[7, 2],
+        figsize=(9, 8),
         num=fig_num
         )
-    fig.suptitle(title, fontsize=16)
+    #fig.suptitle(title, fontsize=16)
 
     for i in range(3):
         a = ax[i]
         a.grid()
         a.tick_params(labelbottom=True)
-        a.set_facecolor('gainsboro')
+        #a.set_facecolor('gainsboro')
         plot_area(log_data.time_gc_collect_start,
                   log_data.time_gc_collect_end, a, alpha=0.4, color='red')
         plot_area(log_data.time_major_gc_start,
                   log_data.time_major_gc_end, a, alpha=0.2, color='blue')
-        ax[f'leg{i}'].set_facecolor('lightgoldenrodyellow')
+        #ax[f'leg{i}'].set_facecolor('gainsboro')
     
     ax0_lines_by_label = dict()
     ax1_lines_by_label = dict()
@@ -199,7 +199,7 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
            'r', where='post', label="threshold")
     ax0_lines_by_label[line.get_label()] = line
     line, = ax[0].step(log_data.time_compute_threshold, log_data.membalancer_compute_threshold,
-               'k', where='post', label="compute_threshold")
+               'k', where='post', label="compute_limit")
     ax0_lines_by_label[line.get_label()] = line
     ax[0].yaxis.set_major_formatter(EngFormatter("B"))
     ax[0].xaxis.set_major_formatter(EngFormatter("s"))
@@ -292,8 +292,9 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
 
     fig.canvas.header_visible = False
     fig.tight_layout()
-    fig.subplots_adjust(hspace=0.09, bottom=0.05)
-    fig.set_facecolor('slategrey')
+    fig.subplots_adjust(hspace=0.15, bottom=0.05)
+    #fig.set_facecolor('slategrey')
+    return fig, ax
 
 
 def plot_benchmark_info(benchmark: list[LogData], tuning_factors: list[float], fig_num: int, title="benchmark data") -> None:
@@ -498,7 +499,7 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
         ['runtime-total_heap']
         ]
     
-    fig, ax = plt.subplot_mosaic(subplots, figsize=(15, 8), num=fig_num)
+    fig, ax = plt.subplot_mosaic(subplots, figsize=(7, 6), num=fig_num)
     fig.suptitle(title, fontsize=16, y=0.993)
 
     for i in ax:
@@ -506,11 +507,11 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
 
     for i in range(len(total_heap_use_per_param_1)):
         ax['major_gc-total_heap'].scatter(total_heap_use_per_param_1[i], total_major_gc_time_per_param_1[i],
-                                          color='k', alpha=0.3, s=25)
+                                          color='k', alpha=0.3, s=10)
         #ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_1[i]), np.average(total_major_gc_time_per_param_1[i]),
         #                               color='k', marker='d', ms=6)
         ax['runtime-total_heap'].scatter(total_heap_use_per_param_1[i],
-                                         runtime_per_param_1[i], color='k', alpha=0.3, s=25)
+                                         runtime_per_param_1[i], color='k', alpha=0.3, s=10)
         #ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_1[i]),
         #                              np.average(runtime_per_param_1[i]), color='k', marker='d', ms=6)
     ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_1, axis=1),
@@ -520,11 +521,11 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
     
     for i in range(len(total_heap_use_per_param_2)):
         ax['major_gc-total_heap'].scatter(total_heap_use_per_param_2[i], total_major_gc_time_per_param_2[i],
-                                          color='b', alpha=0.3, s=25)
+                                          color='b', alpha=0.3, s=10)
         #ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_2[i]), np.average(total_major_gc_time_per_param_2[i]),
         #                               color='b', marker='d', ms=6)
         ax['runtime-total_heap'].scatter(total_heap_use_per_param_2[i],
-                                         runtime_per_param_2[i], color='b', alpha=0.3, s=25)
+                                         runtime_per_param_2[i], color='b', alpha=0.3, s=10)
         #ax['runtime-total_heap'].plot(np.average(total_heap_use_per_param_2[i]),
         #                              np.average(runtime_per_param_2[i]), color='b', marker='d', ms=6)
     ax['major_gc-total_heap'].plot(np.average(total_heap_use_per_param_2, axis=1),
@@ -551,4 +552,4 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
 
     fig.canvas.header_visible = False
     fig.tight_layout()
-    fig.set_facecolor('slategrey')
+    #fig.set_facecolor('slategrey')

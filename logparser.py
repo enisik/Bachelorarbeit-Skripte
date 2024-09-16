@@ -251,7 +251,7 @@ def get_log_data_from_folder(folder: str, mem_balancer: bool=True) -> list[LogDa
 
 
 def get_tuning_factor(path: str) -> float:
-    return float(path.split('/')[-1])
+    return float(path.split('\\')[-1])
 
 
 def get_benchmark(source: str, mem_balancer: bool=True) -> tuple[Benchmark, list[float]]:
@@ -267,9 +267,9 @@ def get_benchmark(source: str, mem_balancer: bool=True) -> tuple[Benchmark, list
 def get_stats_from_log_data(benchmark: Benchmark, tuning_factors: list[float]):
     total_major_gc_time_per_param = []
     avg_max_heap_use_per_param = []
+    avg_runtime_per_param = []
     total_heap_use_per_param = []
     runtime_per_param = []
-    avg_runtime_per_param = []
     data_frames = []
 
     for bench in benchmark:
@@ -282,21 +282,21 @@ def get_stats_from_log_data(benchmark: Benchmark, tuning_factors: list[float]):
                 time += prog_run.time_gc_collect_end[i] - \
                     prog_run.time_gc_collect_start[i]
             total_major_gc_time.append(time)
-            max_heap_use.append(max(prog_run.memory))
-            runtimes.append(prog_run.gc_events[-1]["time-start"])
+            max_heap_use.append(prog_run.max_rss)
+            runtimes.append(prog_run.user_time)
 
         total_heap_use_per_param.append(max_heap_use)
         avg_max_heap_use_per_param.append(np.average(max_heap_use))
-        total_major_gc_time_per_param.append(total_major_gc_time)
+        total_major_gc_time_per_param.append(np.average(total_major_gc_time))
         runtime_per_param.append(runtimes)
         avg_runtime_per_param.append(np.average(runtimes))
         data = np.vstack([max_heap_use, total_major_gc_time, runtimes]).T
         data_frames.append(pd.DataFrame(data, columns=[
             "max heap", "total major gc time", "runtime"]))
 
-    data = np.vstack([avg_max_heap_use_per_param, avg_runtime_per_param]).T
+    data = np.vstack([avg_max_heap_use_per_param, avg_runtime_per_param, total_major_gc_time_per_param]).T
     data_frame = pd.DataFrame(data,
-                     index=tuning_factors, columns=["avg max heap", "avg runtimes"])
+                     index=tuning_factors, columns=["max heap", "run time", "total gc time"])
 
     #data_frame.index.name = "tuning factor"
     return data_frames, data_frame
