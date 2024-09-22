@@ -175,7 +175,7 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
         figsize=(9, 8),
         num=fig_num
         )
-    #fig.suptitle(title, fontsize=16)
+    fig.suptitle(title, fontsize=16)
 
     for i in range(3):
         a = ax[i]
