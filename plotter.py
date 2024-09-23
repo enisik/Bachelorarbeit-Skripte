@@ -183,9 +183,9 @@ def plot_full_gc_info(log_data : LogData, title="benchmark", fig_num=0) -> None:
         a.tick_params(labelbottom=True)
         #a.set_facecolor('gainsboro')
         plot_area(log_data.time_gc_collect_start,
-                  log_data.time_gc_collect_end, a, alpha=0.4, color='red')
+                  log_data.time_gc_collect_end, a, alpha=0.9, color='red')
         plot_area(log_data.time_major_gc_start,
-                  log_data.time_major_gc_end, a, alpha=0.2, color='blue')
+                  log_data.time_major_gc_end, a, alpha=0.35, color='blue')
         #ax[f'leg{i}'].set_facecolor('gainsboro')
     
     ax0_lines_by_label = dict()
@@ -535,9 +535,9 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
 
     ax['major_gc-total_heap'].yaxis.set_major_formatter(EngFormatter("s"))
     ax['major_gc-total_heap'].xaxis.set_major_formatter(EngFormatter("B"))
-    ax['major_gc-total_heap'].axes.set_ylabel("total major gc collection time")
+    ax['major_gc-total_heap'].axes.set_ylabel("total major collect time")
     # (max value of iteration)
-    ax['major_gc-total_heap'].axes.set_xlabel("total heap usage")
+    ax['major_gc-total_heap'].axes.set_xlabel("max heap usage")
     ax['major_gc-total_heap'].legend()
     # plt.ylim(bottom=0)
     # plt.xlim(left=0)
@@ -545,11 +545,12 @@ def plot_pareto(bench1, bench2, fig_num, bench1_label = "bench1", bench2_label =
     ax['runtime-total_heap'].yaxis.set_major_formatter(EngFormatter("s"))
     ax['runtime-total_heap'].xaxis.set_major_formatter(EngFormatter("B"))
     # (time of last event since start)
-    ax['runtime-total_heap'].axes.set_ylabel("runtime")
+    ax['runtime-total_heap'].axes.set_ylabel("run time")
     # (max value of iteration)
-    ax['runtime-total_heap'].axes.set_xlabel("total heap usage")
+    ax['runtime-total_heap'].axes.set_xlabel("max heap usage")
     ax['runtime-total_heap'].legend()
 
     fig.canvas.header_visible = False
     fig.tight_layout()
     #fig.set_facecolor('slategrey')
+    return fig, ax
